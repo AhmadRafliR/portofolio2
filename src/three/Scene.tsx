@@ -13,10 +13,11 @@ import { CAMERA_FOV, CAMERA_Z, SUN_DIR } from './layout'
 /** Background canvas: intro particles and the Mars system, behind the HUD. */
 export function Scene({ paused = false }: { paused?: boolean }) {
   const phase = useHud((s) => s.phase)
+  const lite = useHud((s) => s.lite)
   return (
     <Canvas
       // the AR overlay covers everything: stop drawing Mars underneath it
-      frameloop={paused ? 'never' : 'always'}
+      frameloop={paused ? 'never' : lite && phase === 'landing' ? 'demand' : 'always'}
       className="scene"
       eventSource={document.getElementById('root')!}
       eventPrefix="client"

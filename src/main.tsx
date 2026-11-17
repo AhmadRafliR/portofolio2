@@ -14,8 +14,19 @@ import { shouldPlayIntro } from './intro/timeline'
 const cores = navigator.hardwareConcurrency ?? 4
 useHud.getState().setTier(cores <= 4 ? 'low' : IS_TOUCH ? 'mid' : 'high')
 
-// Returning visitors (same session) and reduced-motion users go straight to the landing.
-if (!shouldPlayIntro(REDUCED_MOTION)) {
+// No WebGL (very old devices, blocked GPU): CSS planet, no intro.
+const webgl = (() => {
+  try {
+    const c = document.createElement('canvas')
+    return Boolean(c.getContext('webgl2') || c.getContext('webgl'))
+  } catch {
+    return false
+  }
+})()
+if (!webgl) document.documentElement.classList.add('no-webgl')
+
+// Returning visitors (same session), reduced-motion users and no-WebGL devices go straight to the landing.
+if (!webgl || !shouldPlayIntro(REDUCED_MOTION)) {
   live.landingIn = 1
   document.documentElement.style.setProperty('--landing', '1')
   document.documentElement.style.setProperty('--launch', '1')

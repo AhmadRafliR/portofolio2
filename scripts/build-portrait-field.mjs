@@ -1,5 +1,5 @@
 // Portrait photo → particle field for the intro (see implementasi.md §2.1.3).
-// Output public/intro/portrait-field.bin:
+// Output public/intro/portrait-field.dat (not .bin: headless Chrome answers fetches of .bin files with an empty 204):
 //   header (16 B): "RPF1", count u32, aspect f32 (width / height), reserved u32
 //   per particle (8 B): x i16, y i16 (−1..1, y up, fit to height), angle u8 (0..π), len u8, tone u8, seed u8
 // Particles are shuffled, so any prefix is an even sample: the app picks a tier by reading the first N.
@@ -138,9 +138,9 @@ out.forEach((p, k) => {
 })
 
 mkdirSync('public/intro', { recursive: true })
-writeFileSync('public/intro/portrait-field.bin', buf)
+writeFileSync('public/intro/portrait-field.dat', buf)
 // the crisp portrait the strands resolve into (keeps alpha; the shader grades it)
 await sharp(SRC).resize(640).webp({ quality: 88, alphaQuality: 90 }).toFile('public/intro/portrait-reveal.webp')
 // static fallback (reduced motion / no WebGL)
 await sharp(SRC).resize(480).grayscale().linear(1.15, -10).webp({ quality: 82 }).toFile('public/intro/portrait.webp')
-console.log(`portrait-field.bin: ${COUNT} particles, ${(buf.length / 1024).toFixed(0)} KB, aspect ${(W / H).toFixed(3)}`)
+console.log(`portrait-field.dat: ${COUNT} particles, ${(buf.length / 1024).toFixed(0)} KB, aspect ${(W / H).toFixed(3)}`)

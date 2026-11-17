@@ -26,6 +26,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js'
 import type { ProbeModel } from '../data/missions'
 import { REDUCED_MOTION } from '../lib/device'
+import { useHud } from '../state/store'
 
 /**
  * NASA probes in HUD boxes. Each box is an ordinary 2D <canvas> inside the card, so it scrolls with the page exactly
@@ -141,7 +142,7 @@ function loop(now: number) {
     const h = e.canvas.height
     if (!w || !h) continue
     r ??= getRenderer()
-    if (!REDUCED_MOTION) e.pivot.rotation.y += dt * (e.hot ? 1.4 : 0.45)
+    if (!REDUCED_MOTION && !useHud.getState().lite) e.pivot.rotation.y += dt * (e.hot ? 1.4 : 0.45)
     e.placeholder.rotation.y += dt * 2
     const aspect = w / h
     if (Math.abs(e.camera.aspect - aspect) > 1e-3) {

@@ -31,7 +31,7 @@ async function loadField(url: string, want: number): Promise<Field> {
   const buf = await (await fetch(url)).arrayBuffer()
   const view = new DataView(buf)
   const magic = String.fromCharCode(view.getUint8(0), view.getUint8(1), view.getUint8(2), view.getUint8(3))
-  if (magic !== 'RPF1') throw new Error('portrait-field.bin: bad header')
+  if (magic !== 'RPF1') throw new Error('portrait-field.dat: bad header')
   const count = Math.min(want, view.getUint32(4, true))
   const face = new Float32Array(count * 2)
   const meta = new Float32Array(count * 4)
@@ -59,7 +59,7 @@ export function ParticlePortrait() {
 
   useEffect(() => {
     let alive = true
-    loadField('/intro/portrait-field.bin', COUNT_BY_TIER[tier])
+    loadField('/intro/portrait-field.dat', COUNT_BY_TIER[tier])
       .then((f) => alive && setField(f))
       .catch(() => alive && setFailed(true))
     return () => {

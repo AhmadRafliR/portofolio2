@@ -18,6 +18,8 @@ interface HudState {
   /** AR View overlay (implementasi.md §6.3) */
   arOpen: boolean
   terminalOpen: boolean
+  /** Lite mode: the 3D scene draws a single still frame and probes stop spinning */
+  lite: boolean
   hoverMission: MissionId | null
   activeMission: MissionId | null
   gyroEnabled: boolean
@@ -36,6 +38,7 @@ interface HudState {
   finishReturn: () => void
   setArOpen: (open: boolean) => void
   setTerminal: (open: boolean) => void
+  setLite: (on: boolean) => void
   setHover: (id: MissionId | null) => void
   setActive: (id: MissionId | null) => void
   setGyro: (on: boolean) => void
@@ -48,6 +51,15 @@ interface HudState {
 
 let toastTimer: ReturnType<typeof setTimeout> | undefined
 
+const LITE_KEY = 'rafli.lite'
+function readLite(): boolean {
+  try {
+    return localStorage.getItem(LITE_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
 export const useHud = create<HudState>((set) => ({
   phase: 'intro',
   landingIn: 0,
@@ -56,6 +68,7 @@ export const useHud = create<HudState>((set) => ({
   returning: false,
   arOpen: false,
   terminalOpen: false,
+  lite: readLite(),
   hoverMission: null,
   activeMission: null,
   gyroEnabled: false,
@@ -76,6 +89,14 @@ export const useHud = create<HudState>((set) => ({
   finishReturn: () => set({ launched: false, returning: false }),
   setArOpen: (arOpen) => set({ arOpen, activeMission: null, terminalOpen: false }),
   setTerminal: (terminalOpen) => set({ terminalOpen }),
+  setLite: (lite) => {
+    try {
+      localStorage.setItem(LITE_KEY, lite ? '1' : '0')
+    } catch {
+      // storage blocked: the choice lasts for this visit only
+    }
+    set({ lite })
+  },
   setHover: (hoverMission) => set({ hoverMission }),
   setActive: (activeMission) => set({ activeMission }),
   setGyro: (gyroEnabled) => set({ gyroEnabled }),

@@ -8,6 +8,7 @@ export function StatusDock() {
   const fps = useHud((s) => s.fps)
   const tier = useHud((s) => s.tier)
   const gyro = useHud((s) => s.gyroEnabled)
+  const lite = useHud((s) => s.lite)
   const degraded = tier === 'low'
   return (
     <footer className="dock landing-fade" style={{ "--d": 0.5 } as React.CSSProperties}>
@@ -15,6 +16,9 @@ export function StatusDock() {
       <span aria-hidden className={degraded ? 'warn' : 'ok'}>{degraded ? 'SYS DEGRADED · LITE' : 'SYS NOMINAL'}</span>
       <span>FPS {String(fps).padStart(2, '0')}</span>
       <span>GYRO {gyro ? 'ON' : 'OFF'}</span>
+      <button type="button" className={`dock-lite ${lite ? 'on' : ''}`} aria-pressed={lite} onClick={() => useHud.getState().setLite(!lite)} title="Lite mode: a still scene for slow devices or battery saving">
+        LITE {lite ? 'ON' : 'OFF'}
+      </button>
       <span className="hide-sm">MISSIONS {MISSIONS.length}</span>
       <button type="button" className="dock-term hide-sm" onClick={() => useHud.getState().setTerminal(true)} title="Terminal (press /)">
         &gt;_ Terminal

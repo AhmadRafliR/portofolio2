@@ -1671,3 +1671,26 @@ html[data-brief='open'] .scrim {
 .section {
   scroll-margin-top: 56px;
 }
+.dock-lite {
+  background: none;
+  border: 1px solid var(--line);
+  padding: 3px 7px;
+  font: inherit;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  cursor: pointer;
+}
+.dock-lite.on {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+/* no WebGL at all: a CSS planet stands in for the scene */
+html.no-webgl .scene {
+  display: none;
+}
+html.no-webgl body {
+  background:
+    radial-gradient(circle at 58% 42%, #d27a45 0, #a2421a 16vmin, #4a1a0b 24vmin, transparent 24.4vmin),
+    radial-gradient(ellipse at center, #0b1022 0%, #040408 70%);
+  background-attachment: fixed;
+}

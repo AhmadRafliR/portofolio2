@@ -177,7 +177,7 @@ Script `scripts/build-portrait-field.mjs` (Node + `sharp`), input `assets/source
 3. **Sobel** → besar gradien `g` dan arah `θ`. Arah helai = tegak lurus gradien (sejajar kontur).
 4. **Sampling berbobot**: peluang dipilih ∝ `0.55·(1−luminance) + 0.45·g` → rambut/jaket gelap & garis wajah dapat lebih banyak helai, pipi terang lebih jarang (seperti sketsa).
 5. Per partikel simpan: `x, y` (dinormalisasi −1..1), `tone` (0..1), `angle`, `len` (rambut/jaket = panjang, area wajah = pendek), `seed`.
-6. Output: `public/intro/portrait-field.bin` (Int16 terkuantisasi, 3 tier: 30k / 18k / 9k partikel; ±180 KB untuk tier terbesar) + `portrait-dots.webp` (render statis untuk reduced-motion / fallback).
+6. Output: `public/intro/portrait-field.dat` (Int16 terkuantisasi, 3 tier: 30k / 18k / 9k partikel; ±180 KB untuk tier terbesar) + `portrait-dots.webp` (render statis untuk reduced-motion / fallback).
 7. Target bola Mars: titik dibagi rata di permukaan bola (Fibonacci sphere), warnanya diambil dari `mars.jpg` (UV equirectangular) → masuk ke file yang sama.
 
 #### 2.1.4 Render (GPU, tanpa update per partikel di CPU)
@@ -473,7 +473,7 @@ Portofolio/
 │  ├─ textures/ mars.jpg, mars_normal_1k.png, mars_normal_2k.png, starmap_1k.jpg, starmap_2k.jpg
 │  ├─ models/hud/ opportunity.glb, curiosity.glb, ingenuity.glb, lunar-module.glb, osiris-rex.glb, perseverance.glb, bennu.glb
 │  ├─ ar/ mars.usdz
-│  ├─ intro/ portrait-field.bin, portrait-dots.webp
+│  ├─ intro/ portrait-field.dat, portrait-dots.webp
 │  ├─ shots/ ipfest-desktop.webp, ipfest-mobile.webp, … , models/*.webp (fallback)
 │  ├─ cv/Ahmad-Rafli-Ramadhan-CV.pdf
 │  └─ og.jpg, favicon.svg
@@ -579,7 +579,7 @@ Detail gaya HUD: panel bertepi chamfer (clip-path sudut terpotong), label sectio
 |---|---|
 | LCP (4G, HP menengah) | < 2.5 s (teks hero tampil dulu, canvas menyusul) |
 | Initial JS (gzip) | < 350 KB (three + r3f ±250 KB; section lain lazy) |
-| Initial aset 3D | Intro: `portrait-field.bin` ±180 KB dimuat pertama. Landing: < 1.5 MB (mars.jpg dikompres ±400 KB, normal 1k, starmap 1k, opportunity), dimuat selama intro berjalan |
+| Initial aset 3D | Intro: `portrait-field.dat` ±180 KB dimuat pertama. Landing: < 1.5 MB (mars.jpg dikompres ±400 KB, normal 1k, starmap 1k, opportunity), dimuat selama intro berjalan |
 | FPS | 60 desktop, ≥ 30 Android menengah |
 
 Teknik:
@@ -636,31 +636,51 @@ Teknik:
   - Tombol `AR VIEW` masih placeholder (toast "next build") sampai Fase 3.
   - JS bundle 361 KB gzip (target 350 KB) — code-split di Fase 5.
 
-### Fase 2 — Missions (1–2 hari)
-- [ ] `capture-shots.mjs` → screenshot 6 situs live.
-- [x] Cek header iframe tiap URL (2026-11-18: semua mengizinkan) → isi `iframeAllowed`.
+### Fase 1b — Revisi intro & navigasi — ✅ 2026-11-18
+- [x] Intro berhenti di potret tajam + mata menyala; lanjut hanya lewat scroll/swipe/↓/Space/Enter/cue.
+- [x] Tombol **◂ Pilot** + scroll ke atas di puncak landing → transisi dijalankan mundur kembali ke potret (§2.1).
+- [x] Model probe digambar di `<canvas>` 2D per kartu (renderer WebGL bersama, `probeRenderer.ts`) → menempel di bingkai saat scroll.
+- [x] Ikon GitHub, LinkedIn, WhatsApp (intro kanan bawah, dock, pilot card di HP).
+
+### Fase 2 — Missions — ✅ 2026-11-18
+- [x] `capture-shots.mjs` → screenshot 6 situs live (desktop + mobile, `public/shots/*.webp`), pakai Chrome/Edge sistem via playwright-core.
+- [x] Cek header iframe tiap URL (2026-11-18: semua mengizinkan).
 - [x] `missions.ts` berisi 8 misi dari §1.3 + §5.1a.
-- [ ] `MissionDetail` + fly-to kamera + sinkron hover beacon ↔ list + filter kategori.
+- [x] `MissionDetail` (drawer kanan desktop / bottom sheet HP): screenshot desktop/mobile, **Live feed** iframe (sandbox, dimuat saat diklik), stack, probe, Launch/Source, prev/next, Esc/←/→.
+- [x] Fly-to kamera ke beacon misi aktif; beacon berhenti; panel hero meredup.
 - [x] Hologram all-sky prosedural untuk M-05.
-- **DoD**: klik beacon/list membuka detail yang benar; link LAUNCH buka tab baru (`rel="noopener"`).
 
-### Fase 3 — AR VIEW (1–2 hari)
-- [ ] Port `device.ts`, `arSupport.ts`, `cameraAr.ts`, `CameraFeed.tsx`, `GyroControls` → `GyroCamera`.
-- [ ] `ArView` overlay + HUD AR + RECENTER + fallback berjenjang.
-- [ ] Tombol iOS Quick Look `mars.usdz`.
-- **DoD**: di Android & iPhone asli kamera + Mars + gyro jalan; menolak izin tidak bikin crash; keluar AR mematikan kamera (indikator kamera HP mati).
+### Fase 2b — Rig pump jack di permukaan Mars — ✅ 2026-11-18
+- [x] `Oil_Pump_Jack.usdz` (dari kamu) → GLB lewat `tools/convert-usdz.html` (USDLoader + GLTFExporter di browser, endpoint simpan dev-only) → dioptimasi jadi **72 KB**.
+- [x] Misi engineering **mendarat**: M-06 HMS di Valles Marineris, M-08 Mud Monitor di Arabia Terra (lokasi ilustratif) + 4 rig tanpa label membentuk ladang minyak kecil. Rig ikut berputar dengan Mars.
+- [x] Buka brief misi yang mendarat → Mars berputar menghadapkan situsnya, kamera turun rendah dari selatan sehingga pump jack terlihat dari samping.
+- [x] iOS: AR Quick Look pump jack (`public/ar/pump-jack.usdz`).
 
-### Fase 4 — Section konten (1–2 hari)
-- [ ] Profile, Mission Log (filter), Crew Record, Tech Arsenal, Comms, Credits.
-- [ ] Camera chapters per section.
-- [ ] Terminal (section + overlay `/`) + easter egg Bennu.
+### Fase 3 — AR VIEW — ✅ dibangun 2026-11-18 (belum dites di HP asli)
+- [x] Port `device.ts`, `arSupport.ts`, `CameraFeed.tsx`, matematika `GyroControls` → `GyroCamera` (`src/ar/`).
+- [x] `ArView` (chunk lazy 4 KB gzip): kamera belakang + Mars melayang ±1.6 m, pinch/scroll zoom, Recenter, kamera on/off, companion Perseverance.
+- [x] Fallback: kamera diblokir → bintang; gyro ditolak/tak ada → drag untuk melihat. Izin gyro diminta di dalam tap tombol AR (syarat iOS).
+- [x] iOS Quick Look: Mars + pump jack.
+- [x] Scene utama berhenti render selama AR terbuka.
+- [ ] **DoD di HP asli** (kamera + gyro + indikator kamera mati saat keluar) — belum bisa dites di sini (browser pane memblokir kamera).
+- [ ] (Stretch) WebXR immersive-ar Android dengan hit-test — tidak dikerjakan.
 
-### Fase 5 — Polish, QA, Deploy (1 hari)
-- [ ] Lite Mode, reduced motion, PerformanceMonitor tiers.
-- [ ] SEO meta, OG image, JSON-LD, favicon.
-- [ ] Smoke test Playwright: landing render, klik misi, terminal `help`, tidak ada console error.
-- [ ] Deploy Vercel; tes ulang AR di URL produksi (HTTPS).
-- [ ] (Stretch) WebXR immersive-ar Android, toggle bahasa ID/EN, GitHub stats.
+### Fase 4 — Section konten — ✅ 2026-11-18
+- [x] Neural Profile, Mission Log (filter), Crew Record (+ "Also on deck"), Tech Arsenal (tanpa persentase karangan), Comms, Credits — isi dari CV + README.
+- [x] Terminal (section + overlay `/`): history, Tab completion, `open m-0x`, `ar`, `sample bennu`, `pilot`, `cv`…
+- [x] Nav section di telemetry bar; scrim yang meredupkan Mars saat scroll ke section konten (pengganti "camera chapters" penuh).
+
+### Fase 5 — Polish & QA — ✅ 2026-11-18 (deploy belum)
+- [x] Lite mode (tombol di dock, tersimpan per pengunjung): scene jadi gambar diam, probe berhenti berputar.
+- [x] Reduced motion → langsung ke landing; tanpa WebGL → planet CSS, tanpa intro.
+- [x] Quality tier adaptif (FPS < 38 tiga detik berturut-turut → turun tier + DPR).
+- [x] SEO: meta, OG image (`public/og.jpg`, dibuat oleh smoke test), Twitter card, canonical, JSON-LD Person (GitHub + LinkedIn), favicon.
+- [x] `npm run smoke`: 14 pengecekan di build produksi (intro diam, scroll launch, brief, terminal, AR buka/tutup, ◂ Pilot, mobile overflow, brief misi mendarat, tanpa error console) — **14/14 lulus**.
+- [x] `vercel.json`: cache header untuk aset + MIME `.usdz`.
+- [x] Ditemukan & diperbaiki: Chrome headless membalas fetch file `.bin` dengan 204 kosong → field partikel kini `portrait-field.dat`.
+- [ ] Deploy Vercel + tes AR di URL produksi (HTTPS) — **menunggu kamu** (tidak push/deploy tanpa izin).
+- [ ] Lighthouse, toggle bahasa ID/EN, GitHub stats — belum.
+- Bundle JS utama: 393 KB gzip (three.js + R3F mendominasi); AR terpisah.
 
 ---
 
@@ -677,9 +697,9 @@ Masih terbuka:
 2. **HMS Simulation & Mud Monitor**: ada repo/screenshot/video? Kalau tidak, misi tampil sebagai `OFFLINE ARCHIVE` dengan deskripsi saja.
 3. **IPFEST**: repo-nya fork organisasi — boleh ditautkan sebagai SOURCE atau link situs saja?
 4. **BantuCepat (GarudaHacks 7.0)** dan **Choke Size ML** — cukup di Mission Log, atau jadi misi ke-9/10?
-5. Kontak publik: email CV, LINE, GitHub — LinkedIn ada?
+5. ✅ Kontak: GitHub, LinkedIn, WhatsApp (dari kamu) + email & LINE dari CV di section Comms.
 6. ✅ Foto → dipakai untuk intro partikel (§2.1). Masih terbuka: kirim foto resolusi asli (≥1024 px) supaya wajah partikel lebih tajam; dan apakah Pilot Card juga pakai versi mini potret partikel?
-7. Domain: `*.vercel.app` atau domain custom?
+7. Domain: meta OG/canonical memakai `https://ahmadrafliporto.vercel.app/` (dari screenshot-mu) — ganti di `index.html` kalau domainnya lain.
 
 ---
 
