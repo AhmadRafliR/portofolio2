@@ -1,0 +1,7 @@
+node_modules
+dist
+.vercel
+*.log
+.DS_Store
+# raw NASA models copied from the SPHEREx project (npm run assets:copy); only the optimized public/models/hud is tracked
+assets/models-src
