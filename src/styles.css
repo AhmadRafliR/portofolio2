@@ -1248,3 +1248,94 @@ html[data-brief='open'] .hero .panel {
   font-style: normal;
   opacity: 0.7;
 }
+
+/* ---------- AR view ---------- */
+.ar {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: #000;
+  color: var(--text);
+  touch-action: none;
+}
+.ar-loading {
+  display: grid;
+  place-items: center;
+  font-family: var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--hud);
+}
+.ar-feed {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ar-canvas {
+  position: absolute !important;
+  inset: 0;
+}
+.ar-hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: max(14px, env(safe-area-inset-top)) 16px max(18px, env(safe-area-inset-bottom));
+}
+.ar-hud a,
+.ar-hud button {
+  pointer-events: auto;
+}
+.ar-top,
+.ar-bottom {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.ar-top {
+  justify-content: space-between;
+}
+.ar-top .eyebrow {
+  margin: 0;
+}
+.ar-bottom {
+  justify-content: center;
+}
+.ar-reticle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 46px;
+  height: 46px;
+  margin: -23px 0 0 -23px;
+  border: 1px solid rgba(0, 217, 255, 0.6);
+  border-radius: 50%;
+  box-shadow: 0 0 0 6px rgba(0, 217, 255, 0.06);
+}
+.ar-companion {
+  position: absolute;
+  left: 16px;
+  bottom: 84px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--hud);
+  text-shadow: 0 1px 4px #000;
+}
+.ar .btn {
+  background: rgba(4, 6, 14, 0.7);
+}
+.ql img {
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  position: absolute;
+}

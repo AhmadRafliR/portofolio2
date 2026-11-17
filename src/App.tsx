@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { Suspense, lazy, useEffect } from 'react'
 import { useHud } from './state/store'
 import { Scene } from './three/Scene'
 import { IntroOverlay } from './intro/IntroOverlay'
@@ -10,9 +10,12 @@ import { MissionDetail } from './hud/MissionDetail'
 import { useGyroParallax } from './lib/useGyro'
 import { useReturnGesture } from './lib/useReturnGesture'
 
+const ArView = lazy(() => import('./ar/ArView'))
+
 export function App() {
   const phase = useHud((s) => s.phase)
   const brief = useHud((s) => s.activeMission)
+  const ar = useHud((s) => s.arOpen)
   useGyroParallax()
   useReturnGesture()
 
@@ -26,7 +29,12 @@ export function App() {
 
   return (
     <>
-      <Scene />
+      <Scene paused={ar} />
+      {ar && (
+        <Suspense fallback={<div className="ar ar-loading">Opening AR…</div>}>
+          <ArView />
+        </Suspense>
+      )}
       {phase === 'intro' && <IntroOverlay />}
       <div className="page" id="top">
         <a className="skip-link" href="#missions">

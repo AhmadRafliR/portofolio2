@@ -3,7 +3,7 @@ import { PROFILE } from '../data/profile'
 import { MISSIONS } from '../data/missions'
 import { useHud } from '../state/store'
 import { Socials } from './Socials'
-import { HAS_ORIENTATION, IS_IN_APP_BROWSER, IS_TOUCH, REDUCED_MOTION, requestGyroPermission } from '../lib/device'
+import { HAS_ORIENTATION, IS_IN_APP_BROWSER, IS_TOUCH, REDUCED_MOTION, arMotion, requestGyroPermission } from '../lib/device'
 
 function TypingRotator({ lines }: { lines: string[] }) {
   const [i, setI] = useState(0)
@@ -46,6 +46,13 @@ export function PilotCard() {
     else showToast('Motion access was declined. Drag or move the mouse instead.')
   }
 
+  const openAr = async () => {
+    if (IS_IN_APP_BROWSER) showToast('For the camera and motion sensors, open this page in Chrome or Safari.')
+    // ask for motion access inside this tap: iOS only shows the prompt from a user gesture
+    arMotion.granted = IS_TOUCH && HAS_ORIENTATION ? await requestGyroPermission() : false
+    useHud.getState().setArOpen(true)
+  }
+
   return (
     <section className="pilot panel landing-fade" style={{ "--d": 0.2 } as React.CSSProperties} aria-labelledby="pilot-name">
       <p className="eyebrow">// Pilot · {PROFILE.callsign}</p>
@@ -75,8 +82,8 @@ export function PilotCard() {
             {gyro ? 'Gyro on' : 'Enable gyro'}
           </button>
         )}
-        <button className="btn" type="button" onClick={() => showToast('AR View lands in the next build: camera + gyro, Mars in your room.')}>
-          AR view <span className="chip">soon</span>
+        <button className="btn" type="button" onClick={openAr}>
+          AR view
         </button>
         <a className="btn ghost" href={PROFILE.cv} download>
           Download CV

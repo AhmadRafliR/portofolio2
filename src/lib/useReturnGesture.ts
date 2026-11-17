@@ -14,6 +14,9 @@ export function useReturnGesture() {
     // ignore the tail of the gesture that launched the landing
     const armedAt = performance.now() + 900
     const back = () => {
+      const { arOpen, activeMission } = useHud.getState()
+      // AR and the mission brief use the wheel and arrow keys themselves
+      if (arOpen || activeMission) return
       if (performance.now() > armedAt && scrollY <= 0) useHud.getState().returnToPilot()
     }
     const onWheel = (e: WheelEvent) => {

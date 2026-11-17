@@ -11,10 +11,12 @@ import { Starfield } from './Starfield'
 import { CAMERA_FOV, CAMERA_Z, SUN_DIR } from './layout'
 
 /** Background canvas: intro particles and the Mars system, behind the HUD. */
-export function Scene() {
+export function Scene({ paused = false }: { paused?: boolean }) {
   const phase = useHud((s) => s.phase)
   return (
     <Canvas
+      // the AR overlay covers everything: stop drawing Mars underneath it
+      frameloop={paused ? 'never' : 'always'}
       className="scene"
       eventSource={document.getElementById('root')!}
       eventPrefix="client"

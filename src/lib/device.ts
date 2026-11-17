@@ -17,3 +17,6 @@ export async function requestGyroPermission(): Promise<boolean> {
     return false
   }
 }
+
+/** Motion permission asked from the AR button tap (iOS only prompts from a user gesture). */
+export const arMotion = { granted: false }
