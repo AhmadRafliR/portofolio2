@@ -17,6 +17,7 @@ interface HudState {
   returning: boolean
   /** AR View overlay (implementasi.md §6.3) */
   arOpen: boolean
+  terminalOpen: boolean
   hoverMission: MissionId | null
   activeMission: MissionId | null
   gyroEnabled: boolean
@@ -34,6 +35,7 @@ interface HudState {
   returnToPilot: () => void
   finishReturn: () => void
   setArOpen: (open: boolean) => void
+  setTerminal: (open: boolean) => void
   setHover: (id: MissionId | null) => void
   setActive: (id: MissionId | null) => void
   setGyro: (on: boolean) => void
@@ -53,6 +55,7 @@ export const useHud = create<HudState>((set) => ({
   launchFast: false,
   returning: false,
   arOpen: false,
+  terminalOpen: false,
   hoverMission: null,
   activeMission: null,
   gyroEnabled: false,
@@ -71,7 +74,8 @@ export const useHud = create<HudState>((set) => ({
       return { phase: 'intro', launched: true, launchFast: false, returning: true, activeMission: null, hoverMission: null }
     }),
   finishReturn: () => set({ launched: false, returning: false }),
-  setArOpen: (arOpen) => set({ arOpen, activeMission: null }),
+  setArOpen: (arOpen) => set({ arOpen, activeMission: null, terminalOpen: false }),
+  setTerminal: (terminalOpen) => set({ terminalOpen }),
   setHover: (hoverMission) => set({ hoverMission }),
   setActive: (activeMission) => set({ activeMission }),
   setGyro: (gyroEnabled) => set({ gyroEnabled }),

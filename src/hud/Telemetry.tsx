@@ -40,6 +40,14 @@ export function TelemetryBar() {
           {PROFILE.callsign} <span className="muted hide-sm">· Mars orbit</span>
         </a>
       </div>
+      <nav className="section-nav" aria-label="Sections">
+        <a href="#missions">Missions</a>
+        <a href="#profile">Profile</a>
+        <a href="#log">Log</a>
+        <a href="#crew">Crew</a>
+        <a href="#arsenal">Arsenal</a>
+        <a href="#comms">Comms</a>
+      </nav>
       <div className="readouts" aria-hidden>
         <span>WIB {wib.format(now)}</span>
         <span>SOL {marsSol(now)}</span>

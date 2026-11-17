@@ -39,6 +39,7 @@ export function CameraRig() {
   const layout = useLayout()
   const size = useThree((s) => s.size)
   const siteVec = useRef(new Vector3()).current
+  const lastScroll = useRef(-1)
   const fly = useRef({
     restPos: new Vector3(),
     restLook: new Vector3(),
@@ -75,6 +76,11 @@ export function CameraRig() {
     p.x += (tgt.x - p.x) * k
     p.y += (tgt.y - p.y) * k
     const scroll = Math.min(1, scrollY / Math.max(1, innerHeight))
+    // past the hero the scene steps back behind a scrim so section text stays readable
+    if (Math.abs(scroll - lastScroll.current) > 0.002) {
+      lastScroll.current = scroll
+      document.documentElement.style.setProperty('--scrolled', scroll.toFixed(3))
+    }
     const v = fly.current
     v.restPos.set(p.x * 0.45, p.y * 0.3 - scroll * 0.6, CAMERA_Z + scroll * 2.2)
     v.restLook.set(0, -scroll * 0.25, 0)

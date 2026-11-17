@@ -7,6 +7,8 @@ import { PilotCard } from './hud/PilotCard'
 import { MissionPanel, MissionsSection } from './hud/Missions'
 import { Credits, StatusDock, Toast } from './hud/Chrome'
 import { MissionDetail } from './hud/MissionDetail'
+import { Arsenal, Comms, CrewRecord, MissionLog, ProfileSection, TerminalSection } from './hud/Sections'
+import { TerminalOverlay } from './hud/Terminal'
 import { useGyroParallax } from './lib/useGyro'
 import { useReturnGesture } from './lib/useReturnGesture'
 
@@ -36,6 +38,7 @@ export function App() {
         </Suspense>
       )}
       {phase === 'intro' && <IntroOverlay />}
+      <div className="scrim" aria-hidden />
       <div className="page" id="top">
         <a className="skip-link" href="#missions">
           Skip to missions
@@ -48,10 +51,17 @@ export function App() {
             <MissionPanel />
           </div>
           <MissionsSection />
+          <ProfileSection />
+          <MissionLog />
+          <CrewRecord />
+          <Arsenal />
+          <TerminalSection />
+          <Comms />
           <Credits />
         </main>
         <StatusDock />
         <MissionDetail />
+        <TerminalOverlay />
         <Toast />
       </div>
     </>

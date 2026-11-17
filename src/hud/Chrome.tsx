@@ -16,6 +16,9 @@ export function StatusDock() {
       <span>FPS {String(fps).padStart(2, '0')}</span>
       <span>GYRO {gyro ? 'ON' : 'OFF'}</span>
       <span className="hide-sm">MISSIONS {MISSIONS.length}</span>
+      <button type="button" className="dock-term hide-sm" onClick={() => useHud.getState().setTerminal(true)} title="Terminal (press /)">
+        &gt;_ Terminal
+      </button>
       <Socials className="dock-socials" />
       <a className="scroll-cue" href="#missions">
         Scroll ▾
