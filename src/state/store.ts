@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import type { Vector3 } from 'three'
 import type { MissionId } from '../data/missions'
 
 export type Phase = 'intro' | 'landing'
@@ -12,6 +13,8 @@ interface HudState {
   launched: boolean
   /** launch at an accelerated pace (Skip intro) */
   launchFast: boolean
+  /** running the launch backwards: Mars and the HUD dissolve back into the portrait */
+  returning: boolean
   hoverMission: MissionId | null
   activeMission: MissionId | null
   gyroEnabled: boolean
@@ -25,6 +28,9 @@ interface HudState {
   setPhase: (p: Phase) => void
   setLandingIn: (v: number) => void
   launch: (fast?: boolean) => void
+  /** back from the landing to the portrait (implementasi.md §2.1) */
+  returnToPilot: () => void
+  finishReturn: () => void
   setHover: (id: MissionId | null) => void
   setActive: (id: MissionId | null) => void
   setGyro: (on: boolean) => void
@@ -42,6 +48,7 @@ export const useHud = create<HudState>((set) => ({
   landingIn: 0,
   launched: false,
   launchFast: false,
+  returning: false,
   hoverMission: null,
   activeMission: null,
   gyroEnabled: false,
@@ -53,6 +60,13 @@ export const useHud = create<HudState>((set) => ({
   setPhase: (phase) => set({ phase }),
   setLandingIn: (landingIn) => set({ landingIn }),
   launch: (fast = false) => set((s) => ({ launched: true, launchFast: s.launchFast || fast })),
+  returnToPilot: () =>
+    set((s) => {
+      if (s.phase !== 'landing') return s
+      scrollTo({ top: 0, behavior: 'instant' })
+      return { phase: 'intro', launched: true, launchFast: false, returning: true, activeMission: null, hoverMission: null }
+    }),
+  finishReturn: () => set({ launched: false, returning: false }),
   setHover: (hoverMission) => set({ hoverMission }),
   setActive: (activeMission) => set({ activeMission }),
   setGyro: (gyroEnabled) => set({ gyroEnabled }),
@@ -82,4 +96,8 @@ export const live = {
   parallaxTarget: { x: 0, y: 0 },
   /** pointer in normalized device coords, for the intro's strand repulsion */
   ndc: { x: 9, y: 9 },
+  /** world position of every mission beacon, written by Orbits each frame (camera fly-to reads it) */
+  beacons: {} as Partial<Record<MissionId, Vector3>>,
+  /** 0..1 eased camera focus on the active mission's beacon */
+  focus: 0,
 }

@@ -6,16 +6,23 @@ import { HudFrame, TelemetryBar } from './hud/Telemetry'
 import { PilotCard } from './hud/PilotCard'
 import { MissionPanel, MissionsSection } from './hud/Missions'
 import { Credits, StatusDock, Toast } from './hud/Chrome'
+import { MissionDetail } from './hud/MissionDetail'
 import { useGyroParallax } from './lib/useGyro'
+import { useReturnGesture } from './lib/useReturnGesture'
 
 export function App() {
   const phase = useHud((s) => s.phase)
+  const brief = useHud((s) => s.activeMission)
   useGyroParallax()
+  useReturnGesture()
 
   useEffect(() => {
     document.documentElement.dataset.phase = phase
-    if (phase === 'landing') scrollTo(0, 0)
   }, [phase])
+
+  useEffect(() => {
+    document.documentElement.dataset.brief = brief ? 'open' : ''
+  }, [brief])
 
   return (
     <>
@@ -36,6 +43,7 @@ export function App() {
           <Credits />
         </main>
         <StatusDock />
+        <MissionDetail />
         <Toast />
       </div>
     </>

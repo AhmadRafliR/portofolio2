@@ -193,8 +193,10 @@ function Strands({ field }: { field: Field }) {
   )
 
   useEffect(() => {
-    introClock.t = 0
-    introClock.lt = -1
+    // coming back from the landing: start at the end of the launch and run it backwards
+    const back = useHud.getState().returning
+    introClock.t = back ? T.rest : 0
+    introClock.lt = back ? L.handoffEnd : -1
     introClock.waited = 0
   }, [])
 
@@ -202,11 +204,17 @@ function Strands({ field }: { field: Field }) {
   const pointerAmt = useRef(0)
 
   useFrame((_, dt) => {
-    const { launched, launchFast } = useHud.getState()
+    const { launched, launchFast, returning } = useHud.getState()
     const step = Math.min(dt, 1 / 20) * (launchFast ? 2.2 : 1)
     const c = introClock
     c.t = Math.min(T.rest, c.t + step)
-    if (launched) {
+    if (returning) {
+      c.lt -= step * 1.15
+      if (c.lt <= 0) {
+        c.lt = -1
+        useHud.getState().finishReturn()
+      }
+    } else if (launched) {
       if (c.lt < 0) c.lt = 0
       // Mars textures still loading: the sphere waits (bounded) before handing over
       if (c.lt >= L.sphereEnd && c.lt < L.sphereEnd + 0.05 && loading.current && c.waited < L.maxWait) c.waited += step
@@ -243,7 +251,7 @@ function Strands({ field }: { field: Field }) {
     live.landingIn = u.handoff
     setVar('--landing', u.handoff)
     setVar('--launch', u.launch)
-    if (c.lt >= L.handoffEnd) finishIntro()
+    if (!returning && c.lt >= L.handoffEnd) finishIntro()
   })
 
   const fs = layout.faceScale

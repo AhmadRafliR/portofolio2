@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useProgress } from '@react-three/drei'
 import { useHud } from '../state/store'
 import { marsSol } from '../lib/marsTime'
@@ -15,10 +15,13 @@ export function IntroOverlay() {
   const total = useProgress((s) => s.total)
   const launched = useHud((s) => s.launched)
   const launch = useHud((s) => s.launch)
+  // after a return from the landing the overlay should not replay its slow first-visit entrance
+  const [returned] = useState(() => useHud.getState().returning)
   const wheel = useRef(0)
 
   useEffect(() => {
     if (launched) return
+    wheel.current = 0
     const go = () => useHud.getState().launch()
     const onWheel = (e: WheelEvent) => {
       if (e.deltaY <= 0) return
@@ -54,7 +57,7 @@ export function IntroOverlay() {
   const pct = total === 0 ? 100 : Math.round(progress)
 
   return (
-    <div className="intro" aria-live="polite">
+    <div className={`intro ${returned ? 'returned' : ''}`} aria-live="polite">
       <button className="intro-skip" type="button" onClick={() => launch(true)}>
         Skip intro <span aria-hidden>▸</span>
       </button>
@@ -87,7 +90,7 @@ export function IntroOverlay() {
         </dl>
       </div>
       <button className="intro-cue" type="button" onClick={() => launch()} disabled={launched}>
-        <span className="cue-label">{launched ? 'Launching' : 'Scroll to launch'}</span>
+        <span className="cue-label">{!launched ? 'Scroll to launch' : useHud.getState().returning ? 'Returning' : 'Launching'}</span>
         <span className="cue-line" aria-hidden />
       </button>
       <Socials className="intro-socials" />

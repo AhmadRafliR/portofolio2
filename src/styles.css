@@ -1015,3 +1015,219 @@ html[data-phase='intro'] .landing-fade {
     bottom: 28px;
   }
 }
+
+/* ---------- back to pilot ---------- */
+.telemetry-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: rgba(10, 16, 34, 0.55);
+  border: 1px solid var(--line-strong);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
+}
+.back-btn:hover,
+.back-btn:focus-visible {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+/* after a return from the landing the overlay skips its slow first-visit entrance */
+.intro.returned *,
+.intro.returned {
+  animation-delay: 0s !important;
+  animation-duration: 0.5s !important;
+}
+.intro.returned .cue-line {
+  animation-duration: 1.8s !important;
+}
+
+/* ---------- mission brief drawer ---------- */
+.detail {
+  position: fixed;
+  z-index: 6;
+  top: 64px;
+  right: calc(var(--gutter) + 10px);
+  bottom: 70px;
+  width: min(470px, 42vw);
+  background: var(--panel-solid);
+  border: 1px solid var(--line-strong);
+  clip-path: var(--chamfer);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transform: translateX(calc(100% + 60px));
+  transition: transform var(--dur-slow) var(--ease-out);
+  overflow: hidden;
+}
+.detail.open {
+  transform: none;
+}
+.detail-inner {
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 16px 18px 20px;
+}
+.detail-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+  margin-bottom: 10px;
+}
+.detail-nav {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+}
+.detail-nav button {
+  width: 30px;
+  height: 28px;
+  background: rgba(10, 16, 34, 0.6);
+  border: 1px solid var(--line);
+  cursor: pointer;
+  font-family: var(--mono);
+}
+.detail-nav button:hover {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+.detail-title {
+  margin: 0 0 4px;
+  font-size: 28px;
+  letter-spacing: -0.02em;
+}
+.media-tabs {
+  display: flex;
+  gap: 6px;
+  margin: 12px 0 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.media-tabs button {
+  background: transparent;
+  border: 1px solid var(--line);
+  padding: 5px 9px;
+  cursor: pointer;
+}
+.media-tabs button[aria-selected='true'],
+.media-tabs button[aria-pressed='true'] {
+  border-color: var(--hud);
+  color: var(--hud);
+}
+.tabs-gap {
+  flex: 1;
+}
+.media {
+  position: relative;
+  border: 1px solid var(--line);
+  background: #02030a;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+.media.desktop {
+  aspect-ratio: 16 / 10;
+}
+.media.mobile {
+  height: min(440px, 52vh);
+}
+.media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+.media.mobile img {
+  width: auto;
+  margin: 0 auto;
+  object-fit: contain;
+}
+.media.archive {
+  padding: 10px;
+}
+.archive-note {
+  margin: 8px 0 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--amber);
+}
+.probe-detail {
+  width: 100%;
+  height: 220px;
+}
+.probe-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.probe-row .probe-note {
+  margin: 0;
+}
+.probe-mini {
+  width: 84px;
+  height: 64px;
+}
+.live {
+  position: absolute;
+  inset: 0;
+}
+.live iframe {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  border: 0;
+  transform-origin: top center;
+  background: #fff;
+}
+.live-wait {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--hud);
+  animation: blink 1.2s steps(2) infinite;
+}
+@media (max-width: 760px), (max-aspect-ratio: 19/20) {
+  .detail {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    height: 74svh;
+    clip-path: none;
+    border-left: 0;
+    border-right: 0;
+    transform: translateY(105%);
+  }
+  .detail-inner {
+    padding: 14px 16px 28px;
+  }
+}
+
+/* while a brief is open the hero panels step back so the flown-to beacon is visible */
+.hero .panel {
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
+html[data-brief='open'] .hero .panel {
+  opacity: 0.06 !important;
+  pointer-events: none;
+}

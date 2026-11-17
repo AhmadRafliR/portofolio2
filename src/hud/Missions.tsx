@@ -7,7 +7,6 @@ const PAGE = 4
 
 function focusMission(m: Mission) {
   useHud.getState().setActive(m.id)
-  document.getElementById(`mission-${m.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
 }
 
 /** Hero side panel (desktop): four missions per page, each with its probe spinning in a HUD viewport. */
@@ -123,6 +122,9 @@ export function MissionsSection() {
               <span>Probe</span> {m.modelName}: {m.modelReason}
             </p>
             <div className="card-actions">
+              <button type="button" className="btn" onClick={() => focusMission(m)}>
+                Brief
+              </button>
               {m.url ? (
                 <a className="btn primary" href={m.url} target="_blank" rel="noopener noreferrer">
                   Launch ↗

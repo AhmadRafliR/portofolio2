@@ -179,4 +179,17 @@ export const MISSIONS: Mission[] = [
   },
 ]
 
+/** Screenshots made by scripts/capture-shots.mjs for every mission with a live site. */
+export function shotsFor(m: Mission): { desktop: string; mobile: string } | null {
+  return m.url ? { desktop: `/shots/${m.id}-desktop.webp`, mobile: `/shots/${m.id}-mobile.webp` } : null
+}
+
+/** Live sites checked 2026-11-18: none sends X-Frame-Options or CSP frame-ancestors, so all may be framed. */
+export const canFrame = (m: Mission) => Boolean(m.url)
+
 export const MISSION_BY_ID = Object.fromEntries(MISSIONS.map((m) => [m.id, m])) as Record<MissionId, Mission>
+
+export function neighbour(id: MissionId, step: 1 | -1): MissionId {
+  const i = MISSIONS.findIndex((m) => m.id === id)
+  return MISSIONS[(i + step + MISSIONS.length) % MISSIONS.length].id
+}

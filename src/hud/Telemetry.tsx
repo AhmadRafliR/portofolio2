@@ -31,10 +31,15 @@ export function TelemetryBar() {
 
   return (
     <header className="telemetry landing-fade" style={{ "--d": 0.05 } as React.CSSProperties}>
-      <a className="callsign" href="#top" aria-label="Back to top">
-        <span className="blip" aria-hidden />
-        {PROFILE.callsign} <span className="muted">· Mars orbit</span>
-      </a>
+      <div className="telemetry-left">
+        <button type="button" className="back-btn" onClick={() => useHud.getState().returnToPilot()} title="Back to the pilot portrait (or scroll up at the top)">
+          <span aria-hidden>◂</span> Pilot
+        </button>
+        <a className="callsign" href="#top" aria-label="Back to top">
+          <span className="blip" aria-hidden />
+          {PROFILE.callsign} <span className="muted hide-sm">· Mars orbit</span>
+        </a>
+      </div>
       <div className="readouts" aria-hidden>
         <span>WIB {wib.format(now)}</span>
         <span>SOL {marsSol(now)}</span>

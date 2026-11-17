@@ -105,17 +105,22 @@ function Beacon({ mission, radius, speed, scale, labelled }: { mission: Mission;
   useFrame((state, dt) => {
     const { hoverMission, activeMission } = useHud.getState()
     const hot = hoverMission === mission.id || activeMission === mission.id
-    if (!REDUCED_MOTION) angle.current += dt * speed * (hot ? 0.2 : 1)
+    if (!REDUCED_MOTION) angle.current += dt * speed * (activeMission === mission.id ? 0 : hot ? 0.2 : 1)
     const a = angle.current
-    group.current?.position.set(Math.cos(a) * radius, 0, Math.sin(a) * radius)
+    if (group.current) {
+      group.current.position.set(Math.cos(a) * radius, 0, Math.sin(a) * radius)
+      group.current.getWorldPosition(live.beacons[mission.id] ??= new Vector3())
+    }
     const k = live.landingIn
     const pulse = 1 + 0.35 * Math.sin(state.clock.elapsedTime * 3 + mission.orbit.phase * 10)
+    // the camera flies right up to the active beacon, so it stays small; hover enlarges it from afar
+    const focused = activeMission === mission.id
     if (core.current) {
-      core.current.scale.setScalar(hot ? 1.9 : 1)
+      core.current.scale.setScalar(focused ? 0.8 : hot ? 1.9 : 1)
       ;(core.current.material as MeshBasicMaterial).opacity = k
     }
     if (halo.current) {
-      halo.current.scale.setScalar((hot ? 2.2 : 1.3) * pulse)
+      halo.current.scale.setScalar((focused ? 0.9 : hot ? 2.2 : 1.3) * pulse)
       ;(halo.current.material as MeshBasicMaterial).opacity = (hot ? 0.45 : 0.22) * k
     }
     // labels dim when the beacon passes behind Mars
@@ -127,10 +132,7 @@ function Beacon({ mission, radius, speed, scale, labelled }: { mission: Mission;
     }
   })
 
-  const select = () => {
-    useHud.getState().setActive(mission.id)
-    document.getElementById(`mission-${mission.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-  }
+  const select = () => useHud.getState().setActive(mission.id)
 
   return (
     <group ref={group}>
