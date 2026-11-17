@@ -5,3 +5,4 @@ dist
 .DS_Store
 # raw NASA models copied from the SPHEREx project (npm run assets:copy); only the optimized public/models/hud is tracked
 assets/models-src
+assets/source/oil-pump-jack.usdz

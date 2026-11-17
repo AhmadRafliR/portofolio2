@@ -69,7 +69,7 @@ export function Orbits() {
       {(['inner', 'outer'] as const).map((ring) => (
         <group key={ring} rotation={RINGS[ring].rotation}>
           <lineSegments geometry={geos[ring]} material={mats.ring} />
-          {MISSIONS.filter((m) => m.orbit.ring === ring).map((m) => (
+          {MISSIONS.filter((m) => m.orbit.ring === ring && !m.landing).map((m) => (
             <Beacon key={m.id} mission={m} radius={RINGS[ring].radius * R} speed={RINGS[ring].speed} scale={R} labelled={layout.wide} />
           ))}
         </group>

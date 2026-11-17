@@ -1,9 +1,10 @@
 import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useTexture } from '@react-three/drei'
-import { AdditiveBlending, Color, FrontSide, SRGBColorSpace, ShaderMaterial, Vector2, type Mesh, type MeshStandardMaterial } from 'three'
+import { AdditiveBlending, Color, FrontSide, SRGBColorSpace, ShaderMaterial, Vector2, type Group, type Mesh, type MeshStandardMaterial } from 'three'
 import { live, useHud } from '../state/store'
 import { MARS_TILT, useLayout } from './layout'
+import { SurfaceSites } from './SurfaceSites'
 
 const ATMO_VERT = /* glsl */ `
 varying vec3 vN;
@@ -38,6 +39,7 @@ export function Mars() {
   map.anisotropy = 8
 
   const body = useRef<Mesh>(null)
+  const spin = useRef<Group>(null)
   const atmo = useMemo(
     () =>
       new ShaderMaterial({
@@ -58,8 +60,8 @@ export function Mars() {
 
   useFrame(() => {
     const k = live.landingIn
+    if (spin.current) spin.current.rotation.y = live.marsSpin
     if (body.current) {
-      body.current.rotation.y = live.marsSpin
       const mat = body.current.material as MeshStandardMaterial
       mat.opacity = k
       mat.transparent = k < 1
@@ -71,10 +73,13 @@ export function Mars() {
   return (
     <group position={layout.marsPos} scale={layout.marsR}>
       <group rotation={[0, 0, MARS_TILT]}>
-        <mesh ref={body} renderOrder={1}>
-          <sphereGeometry args={[1, tier === 'low' ? 64 : tier === 'mid' ? 96 : 128, tier === 'low' ? 32 : tier === 'mid' ? 64 : 96]} />
-          <meshStandardMaterial map={map} normalMap={normal} normalScale={new Vector2(0.9, 0.9)} roughness={1} metalness={0} transparent opacity={0} />
-        </mesh>
+        <group ref={spin}>
+          <mesh ref={body} renderOrder={1}>
+            <sphereGeometry args={[1, tier === 'low' ? 64 : tier === 'mid' ? 96 : 128, tier === 'low' ? 32 : tier === 'mid' ? 64 : 96]} />
+            <meshStandardMaterial map={map} normalMap={normal} normalScale={new Vector2(0.9, 0.9)} roughness={1} metalness={0} transparent opacity={0} />
+          </mesh>
+          <SurfaceSites wide={layout.wide} />
+        </group>
       </group>
       <mesh scale={1.045} material={atmo} renderOrder={2}>
         <sphereGeometry args={[1, 64, 48]} />

@@ -21,7 +21,17 @@ export interface Mission {
   status: 'deployed' | 'offline-archive'
   checkedAt: string
   orbit: { ring: 'inner' | 'outer'; phase: number }
+  /** engineering missions land on the surface (a pump-jack rig) instead of orbiting; site is illustrative */
+  landing?: { lat: number; lon: number; site: string }
 }
+
+/** Extra unlabelled rigs that turn the engineering landing sites into small oil fields (lat, lon in degrees). */
+export const FIELD_RIGS: [number, number][] = [
+  [-9.5, -52],
+  [-18, -66],
+  [24.5, 16],
+  [15, 3],
+]
 
 // Stacks verified 2026-11-18 from github.com/AhmadRafliR and the live sites (implementasi.md §1.3).
 export const MISSIONS: Mission[] = [
@@ -138,6 +148,7 @@ export const MISSIONS: Mission[] = [
     status: 'offline-archive',
     checkedAt: '2026-11-18',
     orbit: { ring: 'outer', phase: 0.1 },
+    landing: { lat: -13.9, lon: -59.2, site: 'Valles Marineris' },
   },
   {
     id: 'm-07',
@@ -176,6 +187,7 @@ export const MISSIONS: Mission[] = [
     status: 'offline-archive',
     checkedAt: '2026-11-18',
     orbit: { ring: 'outer', phase: 0.76 },
+    landing: { lat: 20, lon: 9, site: 'Arabia Terra' },
   },
 ]
 

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>USDZ → GLB converter (dev tool)</title>
+    <style>
+      body { background: #111; color: #ddd; font: 14px monospace; padding: 20px; }
+    </style>
+  </head>
+  <body>
+    <p>Converts assets/source/oil-pump-jack.usdz to assets/models-src/pump-jack.glb. Dev tool only.</p>
+    <pre id="log"></pre>
+    <script type="module">
+      import { USDLoader } from 'three/examples/jsm/loaders/USDLoader.js'
+      import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js'
+      import { Box3, Vector3 } from 'three'
+      const log = (s) => (document.getElementById('log').textContent += s + '\n')
+      try {
+        const scene = await new USDLoader().loadAsync('/assets/source/oil-pump-jack.usdz')
+        // wait for textures decoded from the archive
+        await new Promise((r) => setTimeout(r, 1500))
+        const box = new Box3().setFromObject(scene)
+        const size = box.getSize(new Vector3())
+        let meshes = 0
+        scene.traverse((o) => o.isMesh && meshes++)
+        log(`meshes ${meshes}, size ${size.toArray().map((v) => v.toFixed(3)).join(' × ')}`)
+        const glb = await new GLTFExporter().parseAsync(scene, { binary: true, maxTextureSize: 2048 })
+        const res = await fetch('/__save-asset?name=pump-jack.glb', { method: 'POST', body: glb })
+        log(await res.text())
+        log('DONE')
+      } catch (e) {
+        log('ERROR ' + (e && e.stack ? e.stack : e))
+      }
+    </script>
+  </body>
+</html>

@@ -4,6 +4,8 @@ import { live, useHud } from '../state/store'
 import { REDUCED_MOTION } from '../lib/device'
 import { Vector3 } from 'three'
 import { CAMERA_FOV, CAMERA_Z, useLayout } from './layout'
+import { MISSION_BY_ID } from '../data/missions'
+import { latLonToVector } from './SurfaceSites'
 
 /**
  * Parallax rig: the camera drifts with the mouse (desktop) or the phone's tilt (gyro), and backs off a little as
@@ -36,6 +38,7 @@ export function CameraRig() {
   const perf = useRef({ frames: 0, time: 0, slow: 0 }).current
   const layout = useLayout()
   const size = useThree((s) => s.size)
+  const siteVec = useRef(new Vector3()).current
   const fly = useRef({
     restPos: new Vector3(),
     restLook: new Vector3(),
@@ -53,7 +56,17 @@ export function CameraRig() {
   })
   useFrame((_, dt) => {
     // Mars spin (shared with the intro's particle sphere)
-    if (!REDUCED_MOTION) live.marsSpin += dt * 0.07
+    // a landed mission's brief turns its site toward the camera; otherwise Mars spins slowly
+    const activeId = useHud.getState().activeMission
+    const site = activeId ? MISSION_BY_ID[activeId].landing : undefined
+    if (site) {
+      const n = latLonToVector(site.lat, site.lon, siteVec)
+      const want = Math.atan2(-n.x, n.z)
+      let d = (want - live.marsSpin) % (Math.PI * 2)
+      if (d > Math.PI) d -= Math.PI * 2
+      if (d < -Math.PI) d += Math.PI * 2
+      live.marsSpin += d * (1 - Math.exp(-dt * 2.2))
+    } else if (!REDUCED_MOTION) live.marsSpin += dt * 0.07
 
     // parallax easing
     const k = 1 - Math.exp(-dt * (useHud.getState().gyroEnabled ? 8 : 4))
@@ -74,9 +87,16 @@ export function CameraRig() {
     live.focus += ((beacon ? 1 : 0) - live.focus) * (1 - Math.exp(-dt * 2.6))
     const f = live.focus * live.focus * (3 - 2 * live.focus)
     if (f > 0.001) {
-      const dist = 0.9 + layout.marsR * 0.55
+      const landed = Boolean(site)
+      const dist = landed ? 0.32 + layout.marsR * 0.3 : 0.9 + layout.marsR * 0.55
       v.dir.subVectors(v.target, v.mars.set(...layout.marsPos)).normalize()
-      v.flyPos.copy(v.target).addScaledVector(v.dir, dist).add(v.lift.set(0, dist * 0.22, 0))
+      if (landed) {
+        // surface rig: come in low from the south so the pump jack stands in profile against the horizon
+        v.lift.set(0, -1, 0).addScaledVector(v.dir, v.dir.y).normalize()
+        v.flyPos.copy(v.target).addScaledVector(v.dir, dist * 0.45).addScaledVector(v.lift, dist * 0.9)
+      } else {
+        v.flyPos.copy(v.target).addScaledVector(v.dir, dist).add(v.lift.set(0, dist * 0.22, 0))
+      }
       v.fwd.subVectors(v.target, v.flyPos).normalize()
       v.right.crossVectors(v.fwd, v.up.set(0, 1, 0)).normalize()
       v.camUp.crossVectors(v.right, v.fwd)

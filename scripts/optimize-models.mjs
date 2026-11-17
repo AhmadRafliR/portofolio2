@@ -11,7 +11,7 @@ import { readdirSync, mkdirSync, statSync } from 'node:fs'
 const IN = 'assets/models-src'
 const OUT = 'public/models/hud'
 /** target fraction of triangles kept */
-const RATIO = { 'curiosity.glb': 0.45, 'bennu.glb': 0.25, 'osiris-rex.glb': 0.12, 'perseverance.glb': 0.3, 'lunar-module.glb': 0.5 }
+const RATIO = { 'curiosity.glb': 0.45, 'bennu.glb': 0.25, 'osiris-rex.glb': 0.12, 'perseverance.glb': 0.12, 'lunar-module.glb': 0.5, 'pump-jack.glb': 0.5 }
 
 await MeshoptEncoder.ready
 await MeshoptSimplifier.ready

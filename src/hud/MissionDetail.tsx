@@ -69,6 +69,12 @@ function Brief({ m }: { m: Mission }) {
       <p className="card-meta">
         {m.role} · {m.context} · {m.year}
       </p>
+      {m.landing && (
+        <p className="landing-note">
+          <span>Landed</span> {m.landing.site} · {Math.abs(m.landing.lat)}°{m.landing.lat < 0 ? 'S' : 'N'} {Math.abs(m.landing.lon)}°{m.landing.lon < 0 ? 'W' : 'E'}{' '}
+          <em>(illustrative site, pump-jack rig)</em>
+        </p>
+      )}
 
       {shots ? (
         <>

@@ -1231,3 +1231,20 @@ html[data-brief='open'] .hero .panel {
   opacity: 0.06 !important;
   pointer-events: none;
 }
+
+.landing-note {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.landing-note span {
+  font-family: var(--mono);
+  color: var(--amber);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-right: 4px;
+}
+.landing-note em {
+  font-style: normal;
+  opacity: 0.7;
+}
