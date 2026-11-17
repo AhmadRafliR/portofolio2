@@ -148,6 +148,8 @@ Yang diambil dari referensi **hanya tekniknya**: ribuan goresan halus seperti bu
 - Kalau aset landing belum selesai dimuat saat `HOLD` berakhir, `HOLD` diperpanjang (maks 3 dtk). Progress UPLINK = progress loading **nyata** (`useProgress` drei), bukan angka palsu.
 - `prefers-reduced-motion` → tanpa animasi: potret statis (versi titik, sudah dirender) fade 400 ms ke landing.
 
+> **Revisi 2026-11-18 (feedback):** intro tidak lagi pindah otomatis. Part 1 berakhir di potret tajam (duotone, muncul lewat dissolve dengan tepi amber) dengan **mata menyala** dan helai sisa jadi percikan emas/cyan, lalu **diam menunggu**. Part 2 baru jalan saat pengunjung scroll/swipe ke bawah (atau ↓/Space/Enter/klik "Scroll to launch"): potret ter-dissolve → helai jadi bola Mars → Mars + HUD muncul bertahap (telemetri → pilot card → mission panel → dock). Ikon GitHub, LinkedIn, WhatsApp ada di kanan bawah intro, di dock, dan (mobile) di pilot card.
+
 #### 2.1.2 Layout intro
 ```
 ┌──────────────────────────────────────────┐
@@ -629,7 +631,7 @@ Teknik:
 - [x] Tombol `ENABLE GYRO` + permission iOS + parallax ±14° (kode jadi, **belum dites di device asli**).
 - [ ] Uji di Android & iPhone asli; Lighthouse.
 - **Penyimpangan dari rencana**:
-  - Model HUD pakai **canvas kedua** (`ProbeLayer`, transparan, di atas panel) — bukan satu WebGL context. Alasannya: panel kaca (`backdrop-filter`) mengaburkan model yang digambar di canvas belakang. Canvas ini baru di-mount setelah intro.
+  - Model HUD: tiap kotak probe adalah `<canvas>` 2D biasa di dalam kartu (ikut scroll persis dengan bingkainya); satu renderer WebGL off-DOM menggambar semua probe yang terlihat lalu disalin dengan `drawImage` (`src/three/probeRenderer.ts`). Menggantikan drei `<View>` + canvas overlay yang tertinggal saat scroll di HP.
   - Label beacon (drei `<Html>`) dirender ke layer `#labels` tersendiri supaya tidak melebarkan viewport mobile.
   - Tombol `AR VIEW` masih placeholder (toast "next build") sampai Fase 3.
   - JS bundle 361 KB gzip (target 350 KB) — code-split di Fase 5.

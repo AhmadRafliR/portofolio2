@@ -139,6 +139,8 @@ out.forEach((p, k) => {
 
 mkdirSync('public/intro', { recursive: true })
 writeFileSync('public/intro/portrait-field.bin', buf)
+// the crisp portrait the strands resolve into (keeps alpha; the shader grades it)
+await sharp(SRC).resize(640).webp({ quality: 88, alphaQuality: 90 }).toFile('public/intro/portrait-reveal.webp')
 // static fallback (reduced motion / no WebGL)
 await sharp(SRC).resize(480).grayscale().linear(1.15, -10).webp({ quality: 82 }).toFile('public/intro/portrait.webp')
 console.log(`portrait-field.bin: ${COUNT} particles, ${(buf.length / 1024).toFixed(0)} KB, aspect ${(W / H).toFixed(3)}`)

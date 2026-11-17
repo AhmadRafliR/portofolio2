@@ -14,8 +14,8 @@ import {
   Vector3,
   type Texture,
 } from 'three'
-import { fragmentShader, vertexShader } from './shaders'
-import { T, introClock, introUniforms, markIntroSeen } from './timeline'
+import { fragmentShader, revealFragment, revealVertex, vertexShader } from './shaders'
+import { EYES, L, PORTRAIT_ASPECT, T, introClock, introUniforms, markIntroSeen } from './timeline'
 import { live, useHud, type Tier } from '../state/store'
 import { MARS_TILT, SUN_DIR, useLayout } from '../three/layout'
 
@@ -48,8 +48,9 @@ async function loadField(url: string, want: number): Promise<Field> {
 }
 
 /**
- * The intro (implementasi.md §2.1): strands swirl into a vortex, settle into the portrait, then unravel onto a
- * sphere that matches the Mars mesh exactly, which fades in to take over.
+ * The intro (implementasi.md §2.1). Part 1: strands swirl into a vortex, settle into the portrait, and the crisp
+ * portrait burns in with glowing eyes; it rests there. Part 2 runs once the visitor scrolls: the portrait dissolves,
+ * the strands unravel onto a sphere that matches the Mars mesh exactly, and Mars plus the HUD fade in.
  */
 export function ParticlePortrait() {
   const tier = useHud((s) => s.tier)
@@ -75,9 +76,14 @@ export function ParticlePortrait() {
   return field ? <Strands field={field} /> : null
 }
 
+function setVar(name: string, v: number) {
+  document.documentElement.style.setProperty(name, v.toFixed(3))
+}
+
 function finishIntro() {
   live.landingIn = 1
-  document.documentElement.style.setProperty('--landing', '1')
+  setVar('--landing', 1)
+  setVar('--launch', 1)
   markIntroSeen()
   useHud.getState().setPhase('landing')
 }
@@ -117,6 +123,7 @@ function Strands({ field }: { field: Field }) {
           uSpread: { value: 0 },
           uMorph: { value: 0 },
           uSphere: { value: 0 },
+          uReveal: { value: 0 },
           uFade: { value: 1 },
           uCount: { value: field.count },
           uPx: { value: 0.01 },
@@ -135,44 +142,83 @@ function Strands({ field }: { field: Field }) {
     [field],
   )
 
-  // Mars colours for the sphere phase: loaded on the side, the intro never waits for it
+  const reveal = useMemo(
+    () =>
+      new ShaderMaterial({
+        vertexShader: revealVertex,
+        fragmentShader: revealFragment,
+        transparent: true,
+        depthWrite: false,
+        depthTest: false,
+        uniforms: {
+          uTex: { value: null as Texture | null },
+          uReveal: { value: 0 },
+          uEyes: { value: 0 },
+          uTime: { value: 0 },
+          // eye centres in the plane's UV space (the plane spans x ∈ ±aspect, y ∈ ±1 of the portrait field)
+          uEyeL: { value: new Vector2((EYES[0][0] / PORTRAIT_ASPECT + 1) / 2, (EYES[0][1] + 1) / 2) },
+          uEyeR: { value: new Vector2((EYES[1][0] / PORTRAIT_ASPECT + 1) / 2, (EYES[1][1] + 1) / 2) },
+        },
+      }),
+    [],
+  )
+  const revealReady = useRef(false)
+
+  // textures loaded on the side; the intro never waits for them
   useEffect(() => {
-    const tex = new TextureLoader().load('/textures/mars.jpg', () => {
-      material.uniforms.uMarsTex.value = tex
+    const loader = new TextureLoader()
+    const mars = loader.load('/textures/mars.jpg', () => {
+      material.uniforms.uMarsTex.value = mars
       material.uniforms.uHasTex.value = 1
     })
-    tex.colorSpace = SRGBColorSpace
-    return () => tex.dispose()
-  }, [material])
+    mars.colorSpace = SRGBColorSpace
+    const portrait = loader.load('/intro/portrait-reveal.webp', () => {
+      reveal.uniforms.uTex.value = portrait
+      revealReady.current = true
+    })
+    portrait.colorSpace = SRGBColorSpace
+    return () => {
+      mars.dispose()
+      portrait.dispose()
+    }
+  }, [material, reveal])
 
-  useEffect(() => () => {
-    geometry.dispose()
-    material.dispose()
-  }, [geometry, material])
+  useEffect(
+    () => () => {
+      geometry.dispose()
+      material.dispose()
+      reveal.dispose()
+    },
+    [geometry, material, reveal],
+  )
 
   useEffect(() => {
     introClock.t = 0
-    introClock.extension = 0
+    introClock.lt = -1
+    introClock.waited = 0
   }, [])
 
   const rot = useMemo(() => ({ m4: new Matrix4(), tilt: new Matrix4() }), [])
   const pointerAmt = useRef(0)
 
   useFrame((_, dt) => {
-    const step = Math.min(dt, 1 / 20) * (useHud.getState().skipIntro ? 4 : 1)
+    const { launched, launchFast } = useHud.getState()
+    const step = Math.min(dt, 1 / 20) * (launchFast ? 2.2 : 1)
     const c = introClock
-    // hold the face while landing assets are still loading (bounded)
-    if (c.t >= T.holdEnd && c.t < T.holdEnd + 0.05 && loading.current && c.extension < T.maxExtension && !useHud.getState().skipIntro) {
-      c.extension += step
-    } else {
-      c.t += step
+    c.t = Math.min(T.rest, c.t + step)
+    if (launched) {
+      if (c.lt < 0) c.lt = 0
+      // Mars textures still loading: the sphere waits (bounded) before handing over
+      if (c.lt >= L.sphereEnd && c.lt < L.sphereEnd + 0.05 && loading.current && c.waited < L.maxWait) c.waited += step
+      else c.lt += step
     }
-    const u = introUniforms(c.t)
+    const u = introUniforms(c.t, c.lt)
     const U = material.uniforms
     U.uTime.value += step
     U.uSpread.value = u.spread
     U.uMorph.value = u.morph
     U.uSphere.value = u.sphere
+    U.uReveal.value = u.reveal
     U.uFade.value = 1 - u.handoff
     U.uPx.value = layout.px
     U.uFaceScale.value = layout.faceScale
@@ -183,6 +229,11 @@ function Strands({ field }: { field: Field }) {
     rot.m4.makeRotationY(live.marsSpin).premultiply(rot.tilt)
     U.uMarsRot.value.setFromMatrix4(rot.m4)
 
+    const R = reveal.uniforms
+    R.uReveal.value = revealReady.current ? u.reveal : 0
+    R.uEyes.value = revealReady.current ? u.eyes : 0
+    R.uTime.value = U.uTime.value
+
     // pointer in world units at z = 0
     const wantPointer = live.ndc.x < 2 ? 1 : 0
     pointerAmt.current += (wantPointer - pointerAmt.current) * Math.min(1, dt * 4)
@@ -190,9 +241,24 @@ function Strands({ field }: { field: Field }) {
     if (wantPointer) U.uPointer.value.set((live.ndc.x * layout.viewW) / 2, (live.ndc.y * (layout.px * size.height)) / 2)
 
     live.landingIn = u.handoff
-    document.documentElement.style.setProperty('--landing', u.handoff.toFixed(3))
-    if (c.t >= T.handoffEnd) finishIntro()
+    setVar('--landing', u.handoff)
+    setVar('--launch', u.launch)
+    if (c.lt >= L.handoffEnd) finishIntro()
   })
 
-  return <mesh geometry={geometry} material={material} frustumCulled={false} renderOrder={10} />
+  const fs = layout.faceScale
+  return (
+    <>
+      <mesh
+        material={reveal}
+        position={[layout.faceCenter[0], layout.faceCenter[1], -0.01]}
+        scale={[2 * fs * PORTRAIT_ASPECT, 2 * fs, 1]}
+        frustumCulled={false}
+        renderOrder={9}
+      >
+        <planeGeometry args={[1, 1]} />
+      </mesh>
+      <mesh geometry={geometry} material={material} frustumCulled={false} renderOrder={10} />
+    </>
+  )
 }

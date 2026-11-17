@@ -70,7 +70,7 @@ export function Orbits() {
         <group key={ring} rotation={RINGS[ring].rotation}>
           <lineSegments geometry={geos[ring]} material={mats.ring} />
           {MISSIONS.filter((m) => m.orbit.ring === ring).map((m) => (
-            <Beacon key={m.id} mission={m} radius={RINGS[ring].radius * R} speed={RINGS[ring].speed} scale={R} />
+            <Beacon key={m.id} mission={m} radius={RINGS[ring].radius * R} speed={RINGS[ring].speed} scale={R} labelled={layout.wide} />
           ))}
         </group>
       ))}
@@ -78,6 +78,7 @@ export function Orbits() {
         <group ref={reticle} rotation={[Math.PI / 2, 0, 0]}>
           <lineSegments geometry={geos.reticle} material={mats.reticle} />
         </group>
+        {layout.wide && (
         <Html position={[1.2 * R, 1.05 * R, 0]} className="reticle-label" zIndexRange={[5, 0]} pointerEvents="none" portal={LABELS}>
           <span className="landing-fade">
             TARGET · MARS
@@ -85,12 +86,13 @@ export function Orbits() {
             R 3,389.5 km · TILT 25.19°
           </span>
         </Html>
+        )}
       </Billboard>
     </group>
   )
 }
 
-function Beacon({ mission, radius, speed, scale }: { mission: Mission; radius: number; speed: number; scale: number }) {
+function Beacon({ mission, radius, speed, scale, labelled }: { mission: Mission; radius: number; speed: number; scale: number; labelled: boolean }) {
   const group = useRef<Group>(null)
   const core = useRef<Mesh>(null)
   const halo = useRef<Mesh>(null)
@@ -157,11 +159,13 @@ function Beacon({ mission, radius, speed, scale }: { mission: Mission; radius: n
           <meshBasicMaterial color={color} transparent opacity={0} depthWrite={false} toneMapped={false} />
         </mesh>
       </Billboard>
+      {labelled && (
       <Html center position={[0, 0.11 * scale, 0]} zIndexRange={[6, 0]} pointerEvents="none" portal={LABELS}>
         <span ref={label} className={`beacon-label ${mission.status}`} style={{ opacity: 0 }}>
           {mission.code}
         </span>
       </Html>
+      )}
     </group>
   )
 }

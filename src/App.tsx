@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useHud } from './state/store'
-import { ProbeLayer, Scene } from './three/Scene'
+import { Scene } from './three/Scene'
 import { IntroOverlay } from './intro/IntroOverlay'
 import { HudFrame, TelemetryBar } from './hud/Telemetry'
 import { PilotCard } from './hud/PilotCard'
@@ -14,6 +14,7 @@ export function App() {
 
   useEffect(() => {
     document.documentElement.dataset.phase = phase
+    if (phase === 'landing') scrollTo(0, 0)
   }, [phase])
 
   return (
@@ -29,16 +30,14 @@ export function App() {
         <main>
           <div className="hero">
             <PilotCard />
-            {phase === 'landing' && <MissionPanel />}
+            <MissionPanel />
           </div>
           <MissionsSection />
           <Credits />
         </main>
-        {phase === 'landing' && <StatusDock />}
+        <StatusDock />
         <Toast />
       </div>
-      {/* no probe is on screen during the intro, and the extra layer was seen to hide the particles there */}
-      {phase === 'landing' && <ProbeLayer />}
     </>
   )
 }

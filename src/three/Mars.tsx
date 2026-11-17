@@ -72,7 +72,7 @@ export function Mars() {
     <group position={layout.marsPos} scale={layout.marsR}>
       <group rotation={[0, 0, MARS_TILT]}>
         <mesh ref={body} renderOrder={1}>
-          <sphereGeometry args={[1, tier === 'low' ? 64 : 128, tier === 'low' ? 32 : 96]} />
+          <sphereGeometry args={[1, tier === 'low' ? 64 : tier === 'mid' ? 96 : 128, tier === 'low' ? 32 : tier === 'mid' ? 64 : 96]} />
           <meshStandardMaterial map={map} normalMap={normal} normalScale={new Vector2(0.9, 0.9)} roughness={1} metalness={0} transparent opacity={0} />
         </mesh>
       </group>

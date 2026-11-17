@@ -17,7 +17,7 @@ export function MissionPanel() {
   const pages = Math.ceil(MISSIONS.length / PAGE)
   const list = MISSIONS.slice(page * PAGE, page * PAGE + PAGE)
   return (
-    <aside className="mission-panel panel landing-fade" aria-label="Active missions">
+    <aside className="mission-panel panel landing-fade" style={{ "--d": 0.35 } as React.CSSProperties} aria-label="Active missions">
       <header className="panel-head">
         <span>// Active missions</span>
         <span className="muted">{String(MISSIONS.length).padStart(2, '0')}</span>

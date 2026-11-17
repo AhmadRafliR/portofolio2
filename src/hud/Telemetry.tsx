@@ -30,7 +30,7 @@ export function TelemetryBar() {
   }, [])
 
   return (
-    <header className="telemetry landing-fade">
+    <header className="telemetry landing-fade" style={{ "--d": 0.05 } as React.CSSProperties}>
       <a className="callsign" href="#top" aria-label="Back to top">
         <span className="blip" aria-hidden />
         {PROFILE.callsign} <span className="muted">· Mars orbit</span>

@@ -19,6 +19,7 @@ uniform mat3 uMarsRot;
 uniform vec3 uSun;
 uniform sampler2D uMarsTex;
 uniform float uHasTex;
+uniform float uReveal;   // 0 → 1 : the crisp portrait takes over; strands thin to short sparkles
 
 attribute vec2 aFace;
 attribute vec4 aMeta;   // angle, length, tone, seed
@@ -111,14 +112,75 @@ void main() {
   vec4 mv = modelViewMatrix * vec4(pos, 1.0);
   vec2 dir2 = normalize((viewMatrix * vec4(dir, 0.0)).xy + vec2(1e-5));
   vec2 perp = vec2(-dir2.y, dir2.x);
-  float L = mix(mix(0.15 * uFaceScale, (0.012 + 0.05 * len) * uFaceScale, m), 0.035 * uMarsR, s);
+  float L = mix(mix(0.15 * uFaceScale, (0.012 + 0.05 * len) * uFaceScale * (1.0 - 0.55 * uReveal), m), 0.035 * uMarsR, s);
   float W = uPx * mix(1.5, 1.25, m);
   mv.xy += dir2 * position.x * L + perp * position.y * W;
   gl_Position = projectionMatrix * mv;
 
   vUv = uv;
   vColor = col;
-  vAlpha = uFade * facing * max(spread, m) * mix(0.9, 0.95, m);
+  // once the crisp portrait is in, only the coloured strands stay, as gold and cyan sparkles
+  float sparkle = mix(1.0, 0.05 + 0.95 * (amber + cyan), uReveal);
+  vAlpha = uFade * facing * max(spread, m) * mix(0.9, 0.95, m) * sparkle;
+}
+`
+
+// The crisp portrait the strands settle into (implementasi.md §2.1, "HOLD"): duotone-graded photo that appears and
+// disappears through a noise dissolve with an amber burn edge, plus two glowing eyes.
+export const revealVertex = /* glsl */ `
+varying vec2 vUv;
+void main() {
+  vUv = uv;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+`
+
+export const revealFragment = /* glsl */ `
+uniform sampler2D uTex;
+uniform float uReveal;
+uniform float uEyes;
+uniform float uTime;
+uniform vec2 uEyeL;
+uniform vec2 uEyeR;
+varying vec2 vUv;
+
+float h(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float vnoise(vec2 p) {
+  vec2 i = floor(p), f = fract(p);
+  vec2 u = f * f * (3.0 - 2.0 * f);
+  return mix(mix(h(i), h(i + vec2(1, 0)), u.x), mix(h(i + vec2(0, 1)), h(i + vec2(1, 1)), u.x), u.y);
+}
+float fbm(vec2 p) { return 0.55 * vnoise(p) + 0.3 * vnoise(p * 2.1) + 0.15 * vnoise(p * 4.3); }
+
+float glow(vec2 uv, vec2 c, float r) { vec2 d = (uv - c) / r; return exp(-dot(d, d)); }
+
+void main() {
+  vec4 t = texture2D(uTex, vUv);
+  float l = dot(t.rgb, vec3(0.2126, 0.7152, 0.0722));
+  float k = pow(smoothstep(0.03, 0.7, l), 0.85);
+  vec3 col = mix(vec3(0.03, 0.03, 0.045), vec3(0.98, 0.95, 0.9), k);
+  col += vec3(1.0, 0.72, 0.3) * pow(k, 5.0) * 0.18;
+
+  // noise dissolve with a burning amber edge
+  float n = fbm(vUv * 7.0 + vec2(0.0, uTime * 0.05));
+  float thr = uReveal * 1.25 - 0.12;
+  float vis = smoothstep(n - 0.03, n + 0.03, thr);
+  float edge = smoothstep(n - 0.13, n - 0.02, thr) - vis;
+  col = mix(col, vec3(1.0, 0.68, 0.22) * 1.6, clamp(edge, 0.0, 1.0));
+  float a = t.a * max(vis, edge * 0.9);
+
+  // eyes: hot core, warm iris glow, wide soft halo; a slow flicker keeps them alive
+  float flick = 0.88 + 0.08 * sin(uTime * 3.1) + 0.04 * sin(uTime * 11.3);
+  float e = uEyes * flick;
+  float core = glow(vUv, uEyeL, 0.012) + glow(vUv, uEyeR, 0.012);
+  float iris = glow(vUv, uEyeL, 0.03) + glow(vUv, uEyeR, 0.03);
+  float halo = glow(vUv, uEyeL, 0.085) + glow(vUv, uEyeR, 0.085);
+  vec3 eyeCol = vec3(1.0, 0.97, 0.85) * core * 1.4 + vec3(1.0, 0.74, 0.28) * iris * 0.9 + vec3(1.0, 0.6, 0.15) * halo * 0.35;
+  col += eyeCol * e;
+  a = max(a, clamp((core + iris * 0.6 + halo * 0.25) * e, 0.0, 1.0));
+
+  if (a < 0.003) discard;
+  gl_FragColor = vec4(col, a);
 }
 `
 

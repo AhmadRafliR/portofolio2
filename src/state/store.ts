@@ -8,7 +8,10 @@ interface HudState {
   phase: Phase
   /** 0..1 during the intro → landing handoff, 1 once the landing is fully in */
   landingIn: number
-  skipIntro: boolean
+  /** the visitor has scrolled past the portrait: the dissolve into Mars runs */
+  launched: boolean
+  /** launch at an accelerated pace (Skip intro) */
+  launchFast: boolean
   hoverMission: MissionId | null
   activeMission: MissionId | null
   gyroEnabled: boolean
@@ -21,7 +24,7 @@ interface HudState {
   toast: string | null
   setPhase: (p: Phase) => void
   setLandingIn: (v: number) => void
-  requestSkip: () => void
+  launch: (fast?: boolean) => void
   setHover: (id: MissionId | null) => void
   setActive: (id: MissionId | null) => void
   setGyro: (on: boolean) => void
@@ -37,7 +40,8 @@ let toastTimer: ReturnType<typeof setTimeout> | undefined
 export const useHud = create<HudState>((set) => ({
   phase: 'intro',
   landingIn: 0,
-  skipIntro: false,
+  launched: false,
+  launchFast: false,
   hoverMission: null,
   activeMission: null,
   gyroEnabled: false,
@@ -48,7 +52,7 @@ export const useHud = create<HudState>((set) => ({
   toast: null,
   setPhase: (phase) => set({ phase }),
   setLandingIn: (landingIn) => set({ landingIn }),
-  requestSkip: () => set({ skipIntro: true }),
+  launch: (fast = false) => set((s) => ({ launched: true, launchFast: s.launchFast || fast })),
   setHover: (hoverMission) => set({ hoverMission }),
   setActive: (activeMission) => set({ activeMission }),
   setGyro: (gyroEnabled) => set({ gyroEnabled }),

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { PROFILE } from '../data/profile'
 import { MISSIONS } from '../data/missions'
 import { useHud } from '../state/store'
+import { Socials } from './Socials'
 import { HAS_ORIENTATION, IS_IN_APP_BROWSER, IS_TOUCH, REDUCED_MOTION, requestGyroPermission } from '../lib/device'
 
 function TypingRotator({ lines }: { lines: string[] }) {
@@ -46,7 +47,7 @@ export function PilotCard() {
   }
 
   return (
-    <section className="pilot panel landing-fade" aria-labelledby="pilot-name">
+    <section className="pilot panel landing-fade" style={{ "--d": 0.2 } as React.CSSProperties} aria-labelledby="pilot-name">
       <p className="eyebrow">// Pilot · {PROFILE.callsign}</p>
       <h1 id="pilot-name" className="pilot-name">
         {PROFILE.name}
@@ -82,6 +83,7 @@ export function PilotCard() {
         </a>
       </div>
       {IS_TOUCH && HAS_ORIENTATION && !gyro && <p className="hint">Tilt your phone to steer the orbit.</p>}
+      <Socials className="pilot-socials" />
     </section>
   )
 }

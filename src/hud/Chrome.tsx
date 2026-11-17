@@ -1,6 +1,7 @@
 import { useHud } from '../state/store'
 import { ProbeView } from '../three/ProbeView'
 import { MISSIONS } from '../data/missions'
+import { Socials } from './Socials'
 
 /** Bottom dock: Opportunity as the system mascot, quality state, FPS and gyro status. */
 export function StatusDock() {
@@ -9,12 +10,13 @@ export function StatusDock() {
   const gyro = useHud((s) => s.gyroEnabled)
   const degraded = tier === 'low'
   return (
-    <footer className="dock landing-fade" aria-hidden>
+    <footer className="dock landing-fade" style={{ "--d": 0.5 } as React.CSSProperties}>
       <ProbeView model="opportunity" className="probe-xs" />
-      <span className={degraded ? 'warn' : 'ok'}>{degraded ? 'SYS DEGRADED · LITE' : 'SYS NOMINAL'}</span>
+      <span aria-hidden className={degraded ? 'warn' : 'ok'}>{degraded ? 'SYS DEGRADED · LITE' : 'SYS NOMINAL'}</span>
       <span>FPS {String(fps).padStart(2, '0')}</span>
       <span>GYRO {gyro ? 'ON' : 'OFF'}</span>
       <span className="hide-sm">MISSIONS {MISSIONS.length}</span>
+      <Socials className="dock-socials" />
       <a className="scroll-cue" href="#missions">
         Scroll ▾
       </a>

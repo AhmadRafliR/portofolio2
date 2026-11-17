@@ -3,41 +3,59 @@ import { useProgress } from '@react-three/drei'
 import { useHud } from '../state/store'
 import { marsSol } from '../lib/marsTime'
 import { PROFILE } from '../data/profile'
-import { T, introClock } from './timeline'
+import { Socials } from '../hud/Socials'
 
-/** Text block, uplink readout, 火星 tag and skip control over the particle intro (implementasi.md §2.1.2). */
+/**
+ * DOM layer of the intro (implementasi.md §2.1.2): text block, uplink readout, 火星 tag, contact links, skip control,
+ * and the gesture that launches part 2 — scrolling down, swiping up, ↓ / PageDown / Space / Enter, or the cue.
+ */
 export function IntroOverlay() {
   const progress = useProgress((s) => s.progress)
   const loaded = useProgress((s) => s.loaded)
   const total = useProgress((s) => s.total)
-  const countdown = useRef<HTMLSpanElement>(null)
-  const requestSkip = useHud((s) => s.requestSkip)
+  const launched = useHud((s) => s.launched)
+  const launch = useHud((s) => s.launch)
+  const wheel = useRef(0)
 
-  // T-minus readout follows the WebGL clock without re-rendering React every frame
   useEffect(() => {
-    let raf = 0
-    const tick = () => {
-      const left = Math.max(0, T.handoffEnd - introClock.t)
-      if (countdown.current) countdown.current.textContent = String(Math.ceil(left)).padStart(2, '0')
-      raf = requestAnimationFrame(tick)
+    if (launched) return
+    const go = () => useHud.getState().launch()
+    const onWheel = (e: WheelEvent) => {
+      if (e.deltaY <= 0) return
+      wheel.current += e.deltaY
+      if (wheel.current > 40) go()
     }
-    raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
-  }, [])
-
-  useEffect(() => {
+    let y0: number | null = null
+    const onTouchStart = (e: TouchEvent) => {
+      y0 = e.touches[0]?.clientY ?? null
+    }
+    const onTouchMove = (e: TouchEvent) => {
+      const y = e.touches[0]?.clientY
+      if (y0 != null && y != null && y0 - y > 40) go()
+    }
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') requestSkip()
+      if (['ArrowDown', 'PageDown', ' ', 'Enter'].includes(e.key)) {
+        e.preventDefault()
+        go()
+      } else if (e.key === 'Escape') useHud.getState().launch(true)
     }
+    window.addEventListener('wheel', onWheel, { passive: true })
+    window.addEventListener('touchstart', onTouchStart, { passive: true })
+    window.addEventListener('touchmove', onTouchMove, { passive: true })
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [requestSkip])
+    return () => {
+      window.removeEventListener('wheel', onWheel)
+      window.removeEventListener('touchstart', onTouchStart)
+      window.removeEventListener('touchmove', onTouchMove)
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [launched])
 
   const pct = total === 0 ? 100 : Math.round(progress)
 
   return (
     <div className="intro" aria-live="polite">
-      <button className="intro-skip" type="button" onClick={requestSkip}>
+      <button className="intro-skip" type="button" onClick={() => launch(true)}>
         Skip intro <span aria-hidden>▸</span>
       </button>
       <div className="intro-tag" aria-hidden>
@@ -66,14 +84,13 @@ export function IntroOverlay() {
             <dt>Sol</dt>
             <dd>{marsSol()}</dd>
           </div>
-          <div className="accent">
-            <dt>T-minus</dt>
-            <dd>
-              <span ref={countdown}>06</span>
-            </dd>
-          </div>
         </dl>
       </div>
+      <button className="intro-cue" type="button" onClick={() => launch()} disabled={launched}>
+        <span className="cue-label">{launched ? 'Launching' : 'Scroll to launch'}</span>
+        <span className="cue-line" aria-hidden />
+      </button>
+      <Socials className="intro-socials" />
     </div>
   )
 }

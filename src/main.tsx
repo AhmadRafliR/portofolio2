@@ -18,6 +18,7 @@ useHud.getState().setTier(cores <= 4 ? 'low' : IS_TOUCH ? 'mid' : 'high')
 if (!shouldPlayIntro(REDUCED_MOTION)) {
   live.landingIn = 1
   document.documentElement.style.setProperty('--landing', '1')
+  document.documentElement.style.setProperty('--launch', '1')
   useHud.getState().setPhase('landing')
 }
 
