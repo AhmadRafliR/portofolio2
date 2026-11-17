@@ -14,8 +14,8 @@ export function StatusDock() {
     <footer className="dock landing-fade" style={{ "--d": 0.5 } as React.CSSProperties}>
       <ProbeView model="opportunity" className="probe-xs" />
       <span aria-hidden className={degraded ? 'warn' : 'ok'}>{degraded ? 'SYS DEGRADED · LITE' : 'SYS NOMINAL'}</span>
-      <span>FPS {String(fps).padStart(2, '0')}</span>
-      <span>GYRO {gyro ? 'ON' : 'OFF'}</span>
+      <span className="hide-sm">FPS {String(fps).padStart(2, '0')}</span>
+      <span className="hide-sm">GYRO {gyro ? 'ON' : 'OFF'}</span>
       <button type="button" className={`dock-lite ${lite ? 'on' : ''}`} aria-pressed={lite} onClick={() => useHud.getState().setLite(!lite)} title="Lite mode: a still scene for slow devices or battery saving">
         LITE {lite ? 'ON' : 'OFF'}
       </button>
