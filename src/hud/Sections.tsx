@@ -75,8 +75,8 @@ export function MissionLog() {
         ))}
       </div>
       <ol className="timeline">
-        {list.map((l) => (
-          <li key={l.title} className={`log-${l.kind}`}>
+        {list.map((l, i) => (
+          <li key={l.title} className={`log-${l.kind}`} style={{ '--dur': `${7 + ((i * 1.7) % 4)}s`, '--delay': `${-i * 1.3}s`, '--off': `${(i % 3) * 14}px`, '--off-sm': `${(i % 2) * 8}px` } as React.CSSProperties}>
             <span className="t-year">{l.year}</span>
             <span className="t-dot" aria-hidden />
             <div className="t-body">
