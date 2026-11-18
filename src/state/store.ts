@@ -22,6 +22,10 @@ interface HudState {
   lite: boolean
   hoverMission: MissionId | null
   activeMission: MissionId | null
+  /** surface mode: index into SURFACE_SITES the camera has landed at, null while in orbit */
+  surface: number | null
+  /** the descent has finished: the visitor is on foot on the walkable terrain (SurfaceWalk) */
+  walking: boolean
   gyroEnabled: boolean
   /** device orientation in degrees, throttled for display */
   orientation: { a: number; b: number; g: number } | null
@@ -41,6 +45,11 @@ interface HudState {
   setLite: (on: boolean) => void
   setHover: (id: MissionId | null) => void
   setActive: (id: MissionId | null) => void
+  /** fly down to a surface site */
+  land: (site: number) => void
+  /** back up to orbit */
+  takeOff: () => void
+  setWalking: (on: boolean) => void
   setGyro: (on: boolean) => void
   setOrientation: (o: { a: number; b: number; g: number } | null) => void
   setPointer: (p: { x: number; y: number }) => void
@@ -71,6 +80,8 @@ export const useHud = create<HudState>((set) => ({
   lite: readLite(),
   hoverMission: null,
   activeMission: null,
+  surface: null,
+  walking: false,
   gyroEnabled: false,
   orientation: null,
   pointer: { x: 0, y: 0 },
@@ -84,10 +95,10 @@ export const useHud = create<HudState>((set) => ({
     set((s) => {
       if (s.phase !== 'landing') return s
       scrollTo({ top: 0, behavior: 'instant' })
-      return { phase: 'intro', launched: true, launchFast: false, returning: true, activeMission: null, hoverMission: null }
+      return { phase: 'intro', launched: true, launchFast: false, returning: true, activeMission: null, hoverMission: null, surface: null, walking: false }
     }),
   finishReturn: () => set({ launched: false, returning: false }),
-  setArOpen: (arOpen) => set({ arOpen, activeMission: null, terminalOpen: false }),
+  setArOpen: (arOpen) => set({ arOpen, activeMission: null, terminalOpen: false, surface: null, walking: false }),
   setTerminal: (terminalOpen) => set({ terminalOpen }),
   setLite: (lite) => {
     try {
@@ -98,7 +109,16 @@ export const useHud = create<HudState>((set) => ({
     set({ lite })
   },
   setHover: (hoverMission) => set({ hoverMission }),
-  setActive: (activeMission) => set({ activeMission }),
+  // in orbit a brief has its own camera move, so opening one mid-descent cancels the landing; on foot it opens over the walk
+  setActive: (activeMission) => set((s) => (activeMission && !s.walking ? { activeMission, surface: null } : { activeMission })),
+  land: (surface) =>
+    set((s) => {
+      if (s.phase !== 'landing') return s
+      scrollTo({ top: 0, behavior: 'instant' })
+      return { surface, activeMission: null, hoverMission: null, terminalOpen: false }
+    }),
+  takeOff: () => set({ surface: null, walking: false, activeMission: null }),
+  setWalking: (walking) => set({ walking }),
   setGyro: (gyroEnabled) => set({ gyroEnabled }),
   setOrientation: (orientation) => set({ orientation }),
   setPointer: (pointer) => set({ pointer }),
@@ -130,4 +150,6 @@ export const live = {
   beacons: {} as Partial<Record<MissionId, Vector3>>,
   /** 0..1 eased camera focus on the active mission's beacon */
   focus: 0,
+  /** 0..1 eased descent to the surface site (surface mode) */
+  surfaceIn: 0,
 }

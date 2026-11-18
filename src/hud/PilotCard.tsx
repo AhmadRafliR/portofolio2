@@ -82,6 +82,9 @@ export function PilotCard() {
             {gyro ? 'Gyro on' : 'Enable gyro'}
           </button>
         )}
+        <button className="btn" type="button" onClick={() => useHud.getState().land(0)}>
+          Land on Mars
+        </button>
         <button className="btn" type="button" onClick={openAr}>
           AR view
         </button>

@@ -1694,3 +1694,256 @@ html.no-webgl body {
     radial-gradient(ellipse at center, #0b1022 0%, #040408 70%);
   background-attachment: fixed;
 }
+
+/* ---------- surface mode: landed at a pump-jack site ---------- */
+html[data-surface='on'] body {
+  overflow: hidden;
+}
+.page main,
+#labels {
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
+html[data-surface='on'] .page main,
+html[data-surface='on']:not([data-walk='on']) #labels,
+html[data-surface='on'] .reticle-label {
+  opacity: 0;
+  pointer-events: none;
+}
+html[data-walk='on'],
+html[data-walk='on'] body {
+  touch-action: none;
+  overscroll-behavior: none;
+}
+/* dust-out between the orbital descent and the walkable ground (--dive written by CameraRig / SurfaceWalk) */
+.dive {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(120% 90% at 50% 60%, #d9a77f 0%, #b8784e 55%, #7a4a30 100%);
+  opacity: var(--dive, 0);
+}
+.reticle-label .land-hint {
+  display: inline-block;
+  margin-top: 4px;
+  font-weight: 400;
+  color: var(--amber);
+}
+.surface-hud {
+  position: fixed;
+  z-index: 5;
+  left: calc(var(--gutter) + 10px);
+  bottom: 74px;
+  width: min(400px, calc(100vw - 2 * var(--gutter)));
+  padding: 20px 22px 16px;
+  opacity: 0;
+  translate: 0 18px;
+  pointer-events: none;
+  transition:
+    opacity var(--dur-slow) var(--ease-out),
+    translate var(--dur-slow) var(--ease-out);
+}
+.surface-hud.open {
+  opacity: 1;
+  translate: 0 0;
+  pointer-events: auto;
+  transition-delay: 0.3s;
+}
+.surface-hud .eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--amber);
+}
+.surface-name {
+  margin: 6px 0 2px;
+  font-size: clamp(24px, 3vw, 32px);
+  line-height: 1.1;
+}
+.surface-coords {
+  margin: 0 0 12px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--hud);
+}
+.surface-coords em {
+  color: var(--muted);
+  font-style: normal;
+}
+.surface-field {
+  margin: 0 0 14px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+}
+.surface-field span {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--amber);
+  margin-right: 4px;
+}
+.surface-hud .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.surface-hud .hint {
+  margin: 12px 0 0;
+}
+@media (max-width: 760px), (max-aspect-ratio: 19/20) {
+  .surface-hud {
+    left: 12px;
+    right: 12px;
+    bottom: 64px;
+    width: auto;
+    padding: 16px 16px 12px;
+  }
+  .surface-field {
+    font-size: 13px;
+  }
+}
+
+.surface-credit {
+  margin: 10px 0 0;
+  font-size: 10.5px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+/* hotspot labels on the walkable ground (drei <Html> in the #labels layer) */
+.walk-pin {
+  display: grid;
+  gap: 2px;
+  justify-items: center;
+  padding: 5px 9px 4px;
+  border: 1px solid rgba(79, 227, 214, 0.45);
+  /* no backdrop-filter: blurring a moving label over the WebGL canvas costs a full re-composite every frame */
+  background: rgba(10, 12, 18, 0.72);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--teal);
+  white-space: nowrap;
+  cursor: pointer;
+  pointer-events: auto;
+  transition:
+    color var(--dur-fast),
+    border-color var(--dur-fast),
+    background var(--dur-fast);
+}
+.walk-pin b {
+  font-weight: 500;
+}
+.walk-pin span {
+  font-size: 10px;
+  color: #e6d7c8;
+}
+.walk-pin.rig,
+.walk-pin.offline-archive {
+  color: var(--amber);
+  border-color: rgba(255, 181, 74, 0.5);
+}
+.walk-pin.hot,
+.walk-pin:hover,
+.walk-pin:focus-visible {
+  color: #fff;
+  border-color: #fff;
+  background: rgba(10, 12, 18, 0.85);
+}
+.walk-pad {
+  position: fixed;
+  z-index: 5;
+  right: 18px;
+  bottom: 84px;
+  width: 76px;
+  height: 76px;
+  display: grid;
+  place-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: rgba(10, 12, 18, 0.55);
+  color: var(--hud);
+  font-size: 20px;
+  line-height: 1;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.walk-pad span {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.walk-pad:active {
+  background: rgba(79, 227, 214, 0.25);
+}
+@media (max-width: 760px), (max-aspect-ratio: 19/20) {
+  .surface-hud .surface-field,
+  .surface-hud .surface-credit {
+    display: none;
+  }
+  .walk-pad {
+    bottom: auto;
+    top: 46%;
+  }
+}
+
+.walk-labels {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+html:not([data-walk='on']) .walk-labels {
+  display: none;
+}
+
+/* on the surface the page sections are out of reach: their links would only scroll a hidden page */
+html[data-surface='on'] .section-nav,
+html[data-surface='on'] .scroll-cue {
+  visibility: hidden;
+}
+.surface-hud .short {
+  display: none;
+}
+@media (max-width: 760px), (max-aspect-ratio: 19/20) {
+  .surface-hud .long:not(br),
+  .surface-hud .surface-coords em {
+    display: none;
+  }
+  .surface-hud .short {
+    display: inline;
+  }
+  .surface-hud .eyebrow {
+    margin: 0;
+  }
+  .surface-name {
+    margin: 2px 0 0;
+    font-size: 22px;
+  }
+  .surface-coords {
+    margin: 0 0 10px;
+  }
+  .surface-hud .actions {
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+  .surface-hud .actions .btn {
+    padding: 9px 10px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .surface-hud .hint {
+    margin-top: 8px;
+    font-size: 11px;
+  }
+  .walk-pad {
+    top: auto;
+    bottom: 290px;
+    right: 14px;
+    width: 68px;
+    height: 68px;
+  }
+}

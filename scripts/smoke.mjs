@@ -77,6 +77,32 @@ try {
     await page.locator('.ar button', { hasText: 'Exit' }).click()
     check('AR view closes', (await page.locator('.ar').count()) === 0)
 
+    // surface mode: descend, walk the terrain, open a mission from its hotspot, lift off
+    await page.locator('.pilot button', { hasText: 'Land on Mars' }).click()
+    await page.waitForFunction(() => document.documentElement.dataset.walk === 'on', null, { timeout: 120000 })
+    await page.waitForFunction(() => document.querySelectorAll('.walk-pin').length >= 7, null, { timeout: 120000 })
+    check('surface: lands on the walkable terrain with mission hotspots', true, `${await page.locator('.walk-pin').count()} hotspots`)
+    await page.waitForFunction(() => /m from touchdown/.test(document.querySelector('.surface-hud .hint span')?.textContent ?? ''), null, { timeout: 150000 })
+    // headless software GL runs ~2 fps and the walker clamps each step to 50 ms: run (Shift) and hold a while
+    await page.keyboard.down('ShiftLeft')
+    await page.keyboard.down('KeyW')
+    await page.waitForTimeout(8000)
+    await page.keyboard.up('KeyW')
+    await page.keyboard.up('ShiftLeft')
+    await page.waitForTimeout(1500)
+    const walked = await page.locator('.surface-hud .hint span').innerText()
+    check('surface: WASD walks', /^[1-9]\d* m from touchdown/.test(walked), walked)
+    await page.locator('.surface-hud button', { hasText: 'M-06 brief' }).click()
+    await page.waitForFunction(() => document.querySelector('.detail.open .detail-title')?.textContent === 'HMS Simulation', null, { timeout: 15000 })
+    const overWalk = `${await page.locator('.detail-title').innerText()} / walk=${await page.evaluate(() => document.documentElement.dataset.walk)}`
+    check('surface: a mission brief opens over the walk', overWalk === 'HMS Simulation / walk=on', overWalk)
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(400)
+    await page.keyboard.press('Escape')
+    await page.waitForFunction(() => document.documentElement.dataset.surface === '', null, { timeout: 5000 })
+    check('surface: Esc closes the brief, then lifts off to orbit', true)
+    await page.waitForTimeout(3000)
+
     await page.locator('.back-btn').click()
     await page.waitForFunction(() => document.documentElement.dataset.phase === 'intro', null, { timeout: 5000 })
     check('◂ Pilot returns to the portrait', true)
@@ -96,7 +122,7 @@ try {
     check('phone: no horizontal overflow', overflow <= 1, `${overflow}px`)
     await page.locator('#mission-m-06 .card-actions button').click()
     await page.waitForSelector('.detail.open', { timeout: 5000 })
-    check('phone: landed mission brief opens', (await page.locator('.landing-note').innerText()).includes('Valles Marineris'))
+    check('phone: landed mission brief opens', (await page.locator('.landing-note').innerText()).includes('Gale Crater'))
     check('phone: no page errors', errors.length === 0, errors.slice(0, 3).join(' | '))
     await ctx.close()
   }

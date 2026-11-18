@@ -682,6 +682,29 @@ Teknik:
 - [ ] Lighthouse, toggle bahasa ID/EN, GitHub stats — belum.
 - Bundle JS utama: 393 KB gzip (three.js + R3F mendominasi); AR terpisah.
 
+### Fase 6 — Mendarat & berjalan di permukaan Mars — ✅ 2026-11-18
+Permintaan: "masuk ke Mars / landing" seperti Surface Exploration di SPHEREx, ditambah oil rig dan proyek portofolio.
+- [x] Pintu masuk: tombol **Land on Mars** di kartu pilot, atau klik bola Mars (mendarat di situs terdekat dari titik yang diklik). Label reticle: "▾ Click Mars to land".
+- [x] Turun dari orbit (`CameraRig`):
+  - Mars diputar sampai situsnya menghadap kamera.
+  - Kamera turun ke rig, orbit/beacon memudar, haze atmosfer berubah jadi debu.
+  - Lalu *dust-out* (`.dive`, var `--dive`) dan serah-terima ke medan jalan kaki.
+- [x] Medan jalan kaki (`src/surface/`), port dari `arvr/src/xr/surface/` SPHEREx:
+  - Heightmap NASA via Web Worker (radial clipmap), langit Mars butterscotch dengan glow biru di sekitar matahari, fog, PBR ground (scan CC0 Poly Haven), batu, debu melayang, bayangan matahari.
+  - Aset: `public/terrain/{gale,meridiani}.dat` (ekstensi `.dat`, bukan `.bin`; lihat temuan Fase 5) dan `public/textures/ground/*_{1k,512}.jpg` (daftar ada di `scripts/copy-nasa-assets.mjs`).
+- [x] Situs nyata NASA: M-06 HMS Simulation → **Gale Crater** (Mount Sharp di cakrawala); M-08 Mud Monitor → **Meridiani Planum** (dataran Opportunity). Rig di bola Mars ikut dipindah ke koordinat ini.
+- [x] Isi portofolio di tanah:
+  - Ladang pump jack dari `Oil_Pump_Jack.usdz`: rig utama dengan hotspot misi situs + 5 rig lain.
+  - Semua misi lain diparkir di sekitar sebagai model NASA-nya (Curiosity, Ingenuity melayang, Lunar Module, Perseverance, Opportunity) atau beacon.
+  - Klik pin/label untuk membuka brief misi di atas medan, tanpa keluar dari permukaan.
+- [x] Kontrol:
+  - Desktop: WASD/panah, drag untuk melihat, Shift lari, Space lompat (gravitasi 0,38 g), Esc kembali ke orbit.
+  - HP: drag + tombol tahan **Walk**.
+  - Panel situs: brief, terbang ke situs lain, kembali ke orbit; readout jarak + arah.
+- [x] Smoke test ditambah 4 cek permukaan → **18/18 lulus**.
+- [ ] Tes performa di HP asli (tier `low`: 84×128 ring, tanpa bayangan); di GPU Intel Iris ±80 fps (FOV 38°) / ±30–45 fps (FOV 60°).
+- Credit terrain ditampilkan di panel situs (NASA 3D Resources "Curiosity Landing Site" untuk Gale; NASA MGS MOLA / PDS untuk Meridiani). Oil field, batu, warna, dan langit bersifat artistik.
+
 ---
 
 ## 13. Hal yang Perlu Kamu Konfirmasi / Isi

@@ -9,6 +9,7 @@ import { Credits, StatusDock, Toast } from './hud/Chrome'
 import { MissionDetail } from './hud/MissionDetail'
 import { Arsenal, Comms, CrewRecord, MissionLog, ProfileSection, TerminalSection } from './hud/Sections'
 import { TerminalOverlay } from './hud/Terminal'
+import { SurfaceHud } from './hud/SurfaceHud'
 import { useGyroParallax } from './lib/useGyro'
 import { useReturnGesture } from './lib/useReturnGesture'
 
@@ -18,6 +19,7 @@ export function App() {
   const phase = useHud((s) => s.phase)
   const brief = useHud((s) => s.activeMission)
   const ar = useHud((s) => s.arOpen)
+  const surface = useHud((s) => s.surface)
   useGyroParallax()
   useReturnGesture()
 
@@ -29,6 +31,14 @@ export function App() {
     document.documentElement.dataset.brief = brief ? 'open' : ''
   }, [brief])
 
+  const walking = useHud((s) => s.walking)
+  useEffect(() => {
+    document.documentElement.dataset.surface = surface != null ? 'on' : ''
+  }, [surface])
+  useEffect(() => {
+    document.documentElement.dataset.walk = walking ? 'on' : ''
+  }, [walking])
+
   return (
     <>
       <Scene paused={ar} />
@@ -39,10 +49,12 @@ export function App() {
       )}
       {phase === 'intro' && <IntroOverlay />}
       <div className="scrim" aria-hidden />
+      <div className="dive" aria-hidden />
       <div className="page" id="top">
         <a className="skip-link" href="#missions">
           Skip to missions
         </a>
+        <div id="walk-labels" className="walk-labels" aria-label="Missions on the surface" />
         <HudFrame />
         <TelemetryBar />
         <main>
@@ -60,6 +72,7 @@ export function App() {
           <Credits />
         </main>
         <StatusDock />
+        <SurfaceHud />
         <MissionDetail />
         <TerminalOverlay />
         <Toast />

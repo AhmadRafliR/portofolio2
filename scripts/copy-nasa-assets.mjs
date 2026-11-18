@@ -11,6 +11,13 @@ const FILES = [
   ['textures/space/starmap_2k.jpg', 'textures/starmap_2k.jpg'],
   ['textures/provenance.json', 'textures/provenance.json'],
   ['ar/mars.usdz', 'ar/mars.usdz'],
+  // walkable surface (surface mode): NASA elevation models + CC0 Poly Haven ground scans (greyscale detail)
+  // .dat, not .bin: some Chrome builds answer .bin fetches with an empty 204 (same fix as the intro's portrait field)
+  ['terrain/gale.bin', 'terrain/gale.dat'],
+  ['terrain/meridiani.bin', 'terrain/meridiani.dat'],
+  ...['gravel', 'dust', 'rock'].flatMap((n) =>
+    ['albedo', 'normal', 'rough'].flatMap((k) => ['1k', '512'].map((s) => [`textures/ground/${n}_${k}_${s}.jpg`, `textures/ground/${n}_${k}_${s}.jpg`])),
+  ),
   ...['curiosity', 'ingenuity', 'lunar-module', 'osiris-rex', 'perseverance', 'opportunity', 'bennu'].map((m) => [
     `models/${m}.glb`,
     `../assets/models-src/${m}.glb`,

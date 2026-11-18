@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useHud } from '../state/store'
 import { marsSol } from '../lib/marsTime'
 import { PROFILE } from '../data/profile'
+import { SURFACE_SITES } from '../data/missions'
 
 const wib = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })
 
@@ -11,6 +12,7 @@ const deg = (v: number) => `${v < 0 ? '−' : '+'}${String(Math.abs(Math.round(v
 export function TelemetryBar() {
   const [now, setNow] = useState(() => new Date())
   const orientation = useHud((s) => s.orientation)
+  const surface = useHud((s) => s.surface)
   const [cursor, setCursor] = useState({ x: 0, y: 0 })
 
   useEffect(() => {
@@ -37,7 +39,7 @@ export function TelemetryBar() {
         </button>
         <a className="callsign" href="#top" aria-label="Back to top">
           <span className="blip" aria-hidden />
-          {PROFILE.callsign} <span className="muted hide-sm">· Mars orbit</span>
+          {PROFILE.callsign} <span className="muted hide-sm">· {surface != null ? `Surface · ${SURFACE_SITES[surface].name}` : 'Mars orbit'}</span>
         </a>
       </div>
       <nav className="section-nav" aria-label="Sections">

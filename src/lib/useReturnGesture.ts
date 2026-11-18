@@ -14,10 +14,13 @@ export function useReturnGesture() {
     // ignore the tail of the gesture that launched the landing
     const armedAt = performance.now() + 900
     const back = () => {
-      const { arOpen, activeMission } = useHud.getState()
+      const { arOpen, activeMission, surface } = useHud.getState()
       // AR and the mission brief use the wheel and arrow keys themselves
       if (arOpen || activeMission) return
-      if (performance.now() > armedAt && scrollY <= 0) useHud.getState().returnToPilot()
+      if (performance.now() <= armedAt || scrollY > 0) return
+      // on the surface the wheel and arrows belong to the walk (SurfaceHud's buttons and Esc lift off)
+      if (surface != null) return
+      useHud.getState().returnToPilot()
     }
     const onWheel = (e: WheelEvent) => {
       if (scrollY > 0 || e.deltaY >= 0) {
@@ -37,7 +40,7 @@ export function useReturnGesture() {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement | null
       if (t && /input|textarea|select/i.test(t.tagName)) return
-      if (e.key === 'ArrowUp' || e.key === 'PageUp') back()
+      if ((e.key === 'ArrowUp' || e.key === 'PageUp') && useHud.getState().surface == null) back()
     }
     window.addEventListener('wheel', onWheel, { passive: true })
     window.addEventListener('touchstart', onTouchStart, { passive: true })

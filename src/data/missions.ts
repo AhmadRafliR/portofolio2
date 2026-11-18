@@ -21,16 +21,19 @@ export interface Mission {
   status: 'deployed' | 'offline-archive'
   checkedAt: string
   orbit: { ring: 'inner' | 'outer'; phase: number }
-  /** engineering missions land on the surface (a pump-jack rig) instead of orbiting; site is illustrative */
-  landing?: { lat: number; lon: number; site: string }
+  /**
+   * engineering missions land on the surface (a pump-jack rig) instead of orbiting. The places are real NASA landing
+   * regions with walkable elevation models (src/surface/sites.ts); the oil field itself is illustrative.
+   */
+  landing?: { lat: number; lon: number; site: string; terrain: 'gale' | 'meridiani' }
 }
 
 /** Extra unlabelled rigs that turn the engineering landing sites into small oil fields (lat, lon in degrees). */
 export const FIELD_RIGS: [number, number][] = [
-  [-9.5, -52],
-  [-18, -66],
-  [24.5, 16],
-  [15, 3],
+  [-1.5, 141],
+  [-9.5, 134.5],
+  [2.6, -1.8],
+  [-6.2, -9.4],
 ]
 
 // Stacks verified 2026-11-18 from github.com/AhmadRafliR and the live sites (implementasi.md §1.3).
@@ -148,7 +151,7 @@ export const MISSIONS: Mission[] = [
     status: 'offline-archive',
     checkedAt: '2026-11-18',
     orbit: { ring: 'outer', phase: 0.1 },
-    landing: { lat: -13.9, lon: -59.2, site: 'Valles Marineris' },
+    landing: { lat: -5.4, lon: 137.8, site: 'Gale Crater', terrain: 'gale' },
   },
   {
     id: 'm-07',
@@ -187,7 +190,7 @@ export const MISSIONS: Mission[] = [
     status: 'offline-archive',
     checkedAt: '2026-11-18',
     orbit: { ring: 'outer', phase: 0.76 },
-    landing: { lat: 20, lon: 9, site: 'Arabia Terra' },
+    landing: { lat: -1.95, lon: -5.53, site: 'Meridiani Planum', terrain: 'meridiani' },
   },
 ]
 
@@ -200,6 +203,21 @@ export function shotsFor(m: Mission): { desktop: string; mobile: string } | null
 export const canFrame = (m: Mission) => Boolean(m.url)
 
 export const MISSION_BY_ID = Object.fromEntries(MISSIONS.map((m) => [m.id, m])) as Record<MissionId, Mission>
+
+/** Places the visitor can land on (surface mode): every engineering mission's site, in mission order. */
+export interface SurfaceSite {
+  name: string
+  lat: number
+  lon: number
+  terrain: 'gale' | 'meridiani'
+  mission: Mission
+}
+export const SURFACE_SITES: SurfaceSite[] = MISSIONS.filter((m) => m.landing).map((m) => ({ name: m.landing!.site, lat: m.landing!.lat, lon: m.landing!.lon, terrain: m.landing!.terrain, mission: m }))
+
+/** "13.9°S · 59.2°W" */
+export function formatLatLon(lat: number, lon: number): string {
+  return `${Math.abs(lat).toFixed(1)}°${lat < 0 ? 'S' : 'N'} · ${Math.abs(lon).toFixed(1)}°${lon < 0 ? 'W' : 'E'}`
+}
 
 export function neighbour(id: MissionId, step: 1 | -1): MissionId {
   const i = MISSIONS.findIndex((m) => m.id === id)

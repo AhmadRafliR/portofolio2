@@ -58,7 +58,8 @@ export function Orbits() {
   const reticle = useRef<Group>(null)
 
   useFrame((_, dt) => {
-    const k = live.landingIn
+    // orbit furniture clears away while the camera is down on the surface
+    const k = live.landingIn * (1 - live.surfaceIn)
     mats.ring.opacity = 0.32 * k
     mats.reticle.opacity = 0.55 * k
     if (reticle.current && !REDUCED_MOTION) reticle.current.rotation.z += dt * 0.08
@@ -84,6 +85,8 @@ export function Orbits() {
             TARGET · MARS
             <br />
             R 3,389.5 km · TILT 25.19°
+            <br />
+            <b className="land-hint">▾ Click Mars to land</b>
           </span>
         </Html>
         )}
@@ -111,7 +114,8 @@ function Beacon({ mission, radius, speed, scale, labelled }: { mission: Mission;
       group.current.position.set(Math.cos(a) * radius, 0, Math.sin(a) * radius)
       group.current.getWorldPosition(live.beacons[mission.id] ??= new Vector3())
     }
-    const k = live.landingIn
+    // orbit furniture clears away while the camera is down on the surface
+    const k = live.landingIn * (1 - live.surfaceIn)
     const pulse = 1 + 0.35 * Math.sin(state.clock.elapsedTime * 3 + mission.orbit.phase * 10)
     // the camera flies right up to the active beacon, so it stays small; hover enlarges it from afar
     const focused = activeMission === mission.id
@@ -139,6 +143,8 @@ function Beacon({ mission, radius, speed, scale, labelled }: { mission: Mission;
       <mesh
         ref={core}
         onPointerOver={(e) => {
+          // hidden while on the surface, but three still raycasts invisible meshes
+          if (useHud.getState().surface != null) return
           e.stopPropagation()
           useHud.getState().setHover(mission.id)
           document.body.style.cursor = 'pointer'
@@ -148,6 +154,7 @@ function Beacon({ mission, radius, speed, scale, labelled }: { mission: Mission;
           document.body.style.cursor = ''
         }}
         onClick={(e) => {
+          if (useHud.getState().surface != null) return
           e.stopPropagation()
           select()
         }}

@@ -1,4 +1,4 @@
-import { Suspense } from 'react'
+import { Suspense, lazy } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { NoToneMapping } from 'three'
 import { useHud } from '../state/store'
@@ -10,14 +10,20 @@ import { Orbits } from './Orbits'
 import { Starfield } from './Starfield'
 import { CAMERA_FOV, CAMERA_Z, SUN_DIR } from './layout'
 
+const SurfaceWalk = lazy(() => import('../surface/SurfaceWalk').then((m) => ({ default: m.SurfaceWalk })))
+
 /** Background canvas: intro particles and the Mars system, behind the HUD. */
 export function Scene({ paused = false }: { paused?: boolean }) {
   const phase = useHud((s) => s.phase)
   const lite = useHud((s) => s.lite)
+  const surface = useHud((s) => s.surface)
+  const walking = useHud((s) => s.walking)
+  const onFoot = walking && surface != null
   return (
     <Canvas
       // the AR overlay covers everything: stop drawing Mars underneath it
-      frameloop={paused ? 'never' : lite && phase === 'landing' ? 'demand' : 'always'}
+      frameloop={paused ? 'never' : lite && phase === 'landing' && surface == null ? 'demand' : 'always'}
+      shadows
       className="scene"
       eventSource={document.getElementById('root')!}
       eventPrefix="client"
@@ -27,14 +33,22 @@ export function Scene({ paused = false }: { paused?: boolean }) {
       gl={{ antialias: true, powerPreference: 'high-performance', toneMapping: NoToneMapping }}
     >
       <color attach="background" args={['#040408']} />
-      <ambientLight intensity={0.06} />
-      <directionalLight position={SUN_DIR} intensity={2.6} />
       <CameraRig />
-      <Suspense fallback={null}>
-        <Starfield />
-        <Mars />
-        <Orbits />
-      </Suspense>
+      {/* the orbit stays mounted (hidden) while on foot, so lifting off is instant */}
+      <group visible={!onFoot}>
+        <ambientLight intensity={0.06} />
+        <directionalLight position={SUN_DIR} intensity={2.6} />
+        <Suspense fallback={null}>
+          <Starfield />
+          <Mars />
+          <Orbits />
+        </Suspense>
+      </group>
+      {onFoot && (
+        <Suspense fallback={null}>
+          <SurfaceWalk key={surface} siteIndex={surface} />
+        </Suspense>
+      )}
       {phase === 'intro' && <ParticlePortrait />}
     </Canvas>
   )
