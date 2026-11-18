@@ -68,7 +68,7 @@ try {
     await page.waitForSelector('.term-overlay input', { timeout: 3000 })
     await page.locator('.term-overlay input').fill('whoami')
     await page.keyboard.press('Enter')
-    check('terminal answers whoami', (await page.locator('.term-overlay .term-screen').innerText()).includes('frontend developer'))
+    check('terminal answers whoami', (await page.locator('.term-overlay .term-screen').innerText()).includes('full stack developer'))
     await page.keyboard.press('Escape')
 
     await page.locator('.pilot button', { hasText: 'AR view' }).click()

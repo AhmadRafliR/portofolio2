@@ -70,7 +70,7 @@ export function IntroOverlay() {
           {PROFILE.name}
           <span className="dot">.</span>
         </h1>
-        <p className="intro-sub">Frontend developer · UI/UX · Petroleum Engineering at ITB.</p>
+        <p className="intro-sub">Full stack developer · UI/UX · Petroleum Engineering at ITB.</p>
         <p className="intro-label">Uplink · Mars orbit</p>
         <dl className="intro-readout">
           <div>

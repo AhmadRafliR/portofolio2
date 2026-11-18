@@ -21,7 +21,7 @@ function run(raw: string, overlay: boolean): Line[] | 'clear' {
         { kind: 'out', text: 'whoami · status · objective · missions · open <m-01…m-08> · skills · contact · cv · ar · sample bennu · pilot · clear' + (overlay ? ' · exit' : '') },
       ]
     case 'whoami':
-      return [{ kind: 'out', text: 'ahmad_rafli — frontend developer | ui/ux explorer | engineering student' }]
+      return [{ kind: 'out', text: 'ahmad_rafli — full stack developer | ui/ux explorer | engineering student' }]
     case 'status':
       return [{ kind: 'out', text: 'learning & building | merging engineering mechanics with web tech | designing clean UI' }]
     case 'objective':
